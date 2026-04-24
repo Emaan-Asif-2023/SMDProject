@@ -1,10 +1,11 @@
 package com.example.project;
-
-public class Person
-{
+public class Person {
+    int personId;
     String name;
     String email;
     String password;
+
+    public Person() {}
 
     public Person(String name, String email, String password) {
         this.name = name;
@@ -12,28 +13,15 @@ public class Person
         this.password = password;
     }
 
-    public String getName() {
-        return name;
-    }
+    public int getId() { return personId; }
+    public void setId(int personId) { this.personId = personId; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }
-

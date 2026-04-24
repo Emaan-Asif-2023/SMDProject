@@ -1,44 +1,100 @@
 package com.example.project;
+package com.example.project;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.*;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class Login extends AppCompatActivity {
 
     ImageView logo;
-    TextView welcome, forgotpass,signup;
-    EditText mail,password;
-
+    TextView welcome, forgotpass, signup;
+    EditText mail, password;
     Button login;
+    CheckBox remember;
 
+    SharedPreferences sp;
+    SharedPreferences.Editor editor;
 
+    Database db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        logo=findViewById(R.id.ivLogo);
-        welcome=findViewById(R.id.tvwelcome);
-        forgotpass=findViewById(R.id.tvforgotpass);
-        signup=findViewById(R.id.tvsignup);
-        mail=findViewById(R.id.etmail);
-        password=findViewById(R.id.etpassword);
-        login=findViewById(R.id.btnlogin);
+        logo = findViewById(R.id.ivLogo);
+        welcome = findViewById(R.id.tvwelcome);
+        forgotpass = findViewById(R.id.tvforgotpass);
+        signup = findViewById(R.id.tvsignup);
+        mail = findViewById(R.id.etmail);
+        password = findViewById(R.id.etpassword);
+        login = findViewById(R.id.btnlogin);
+        remember = findViewById(R.id.cbRemember);
+
+        sp = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+        editor = sp.edit();
+
+        db = new Database(this);
+        db.open();
+
+        boolean isLoggedIn = sp.getBoolean("isLoggedIn", false);
+
+        if(isLoggedIn)
+        {
+            String savedEmail = sp.getString("email", "");
+            mail.setText(savedEmail);
+            remember.setChecked(true);
+
+            Toast.makeText(this, "Welcome back " + savedEmail, Toast.LENGTH_SHORT).show();
+
+            // Intent i = new Intent(Login.this, Home.class);
+            // startActivity(i);
+            // finish();
+        }
+
+        login.setOnClickListener(v -> {
+
+            String e = mail.getText().toString();
+            String p = password.getText().toString();
+
+            if(e.isEmpty() || p.isEmpty())
+            {
+                Toast.makeText(this, "Enter email & password", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Person person = db.login(e, p);
+
+            if(person != null)
+            {
+                Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
+
+                // ✅ REMEMBER ME
+                if(remember.isChecked())
+                {
+                    editor.putBoolean("isLoggedIn", true);
+                    editor.putString("email", e);
+                    editor.apply();
+                }
+                else
+                {
+                    editor.clear();
+                    editor.apply();
+                }
+
+                // Move to Home
+                // Intent i = new Intent(Login.this, Home.class);
+                // startActivity(i);
+                // finish();
+            }
+            else
+            {
+                Toast.makeText(this, "Invalid Credentials", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

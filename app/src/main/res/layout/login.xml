@@ -60,6 +60,15 @@
             android:layout_marginBottom="20dp"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"/>
+        <CheckBox
+            android:id="@+id/cbRemember"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remember Me"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_gravity="left"
+            android:layout_marginBottom="16dp"/>
 
 
         <Button
