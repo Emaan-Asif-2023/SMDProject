@@ -1,5 +1,5 @@
 package com.example.project;
-package com.example.project;
+
 
 import android.content.Intent;
 import android.content.SharedPreferences;
