@@ -3,6 +3,7 @@ package com.example.project;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -11,30 +12,33 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-public class Signup extends AppCompatActivity {
+public class Login extends AppCompatActivity {
 
-    TextView account, login;
-    EditText name, email,password, confirmPassword;
-    Button signup;
+    ImageView logo;
+    TextView welcome, forgotpass,signup;
+    EditText mail,password;
+
+    Button login;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.signup);
+        setContentView(R.layout.login);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        account=findViewById(R.id.tvaccount);
-        login=findViewById(R.id.tvlogin);
-        name=findViewById(R.id.etname);
-        email=findViewById(R.id.etemail);
-        password=findViewById(R.id.etpass);
-        confirmPassword=findViewById(R.id.etconfirmpass);
-        signup=findViewById(R.id.btnsignup);
+        logo=findViewById(R.id.ivLogo);
+        welcome=findViewById(R.id.tvwelcome);
+        forgotpass=findViewById(R.id.tvforgotpass);
+        signup=findViewById(R.id.tvsignup);
+        mail=findViewById(R.id.etmail);
+        password=findViewById(R.id.etpassword);
+        login=findViewById(R.id.btnlogin);
     }
 }
