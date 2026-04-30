@@ -16,7 +16,7 @@
             android:id="@+id/ivLogo"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:src="@drawable/projlogo"
+            android:src="@drawable/proj_logo"
             android:layout_marginBottom="16dp"/>
 
 

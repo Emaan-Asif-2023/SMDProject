@@ -23,6 +23,6 @@
         android:textSize="25sp"
         android:text="BOOKING SYSTEM"
         android:id="@+id/tvName"
-        android:textColor="@color/blue" />
+        android:textColor="@color/darkBlue" />
 
 </LinearLayout>
