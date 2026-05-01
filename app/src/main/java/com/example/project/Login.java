@@ -3,10 +3,18 @@ package com.example.project;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.*;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class Login extends AppCompatActivity {
 
@@ -21,6 +29,9 @@ public class Login extends AppCompatActivity {
 
     Database db;
 
+    FirebaseAuth auth;
+    FirebaseUser user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +45,13 @@ public class Login extends AppCompatActivity {
         password = findViewById(R.id.etpassword);
         login = findViewById(R.id.btnlogin);
         remember = findViewById(R.id.cbRemember);
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+
+        if (user != null) {
+            startActivity(new Intent(Login.this, HomeActivity.class));
+            finish();
+        }
 
         sp = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
         editor = sp.edit();
@@ -64,10 +82,33 @@ public class Login extends AppCompatActivity {
             String e = mail.getText().toString().trim();
             String p = password.getText().toString().trim();
 
-            if (e.isEmpty() || p.isEmpty()) {
-                Toast.makeText(this, "Enter email & password", Toast.LENGTH_SHORT).show();
+            if (TextUtils.isEmpty(e)) {
+                Toast.makeText(this, "Enter email", Toast.LENGTH_SHORT).show();
                 return;
             }
+            else if (TextUtils.isEmpty(p)) {
+                Toast.makeText(this, "Enter password", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            else if(p.length() < 8) {
+                Toast.makeText(this, "Password must be at least 8 characters long", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            auth.signInWithEmailAndPassword(e,p)
+                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                        @Override
+                        public void onSuccess(AuthResult authResult) {
+                            Toast.makeText(Login.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(Login.this, HomeActivity.class));
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(Login.this, "Login failed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
             Person person = db.login(e, p);
 
@@ -92,7 +133,7 @@ public class Login extends AppCompatActivity {
         });
         forgotpass.setOnClickListener( v->
         {
-            Intent i = new Intent(Login.this, ForgetPassword.class);
+            Intent i = new Intent(Login.this, ForgetPasswordActivity.class);
         });
     }
 }
