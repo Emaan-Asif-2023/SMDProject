@@ -10,7 +10,9 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
+
 public class Database {
+
     static final String DATABASE_NAME = "HotelDB";
     static final int DATABASE_VERSION = 1;
     static final String TABLE_PERSON = "persons";
@@ -23,19 +25,15 @@ public class Database {
     DBHelper helper;
 
 
-
-    public Database(Context context)
-    {
+    public Database(Context context) {
         this.context = context;
     }
 
-    public void open()
-    {
+    public void open() {
         helper = new DBHelper(context);
     }
 
-    public long insertPerson(Person person)
-    {
+    public long insertPerson(Person person) {
         SQLiteDatabase db = helper.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_NAME, person.getName());
@@ -46,20 +44,24 @@ public class Database {
         return id;
     }
 
-    public Person getPersonById(int id)
-    {
+    public void insertTestData() {
+        insertPerson(new Person("John Doe", "john@test.com", "123456"));
+        insertPerson(new Person("Jane Smith", "jane@test.com", "password"));
+        insertPerson(new Person("Admin", "admin@test.com", "admin123"));
+    }
+
+    public Person getPersonById(int id) {
         SQLiteDatabase db = helper.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_PERSON,
                 null,
-                COLUMN_ID+"=?",
+                COLUMN_ID + "=?",
                 new String[]{String.valueOf(id)},
                 null, null, null);
 
         Person person = null;
 
-        if(cursor!=null && cursor.moveToFirst())
-        {
+        if (cursor != null && cursor.moveToFirst()) {
             int index_name = cursor.getColumnIndex(COLUMN_NAME);
             int index_email = cursor.getColumnIndex(COLUMN_EMAIL);
             int index_password = cursor.getColumnIndex(COLUMN_PASSWORD);
@@ -75,33 +77,28 @@ public class Database {
         return person;
     }
 
-    public ArrayList<Person> getAllPersons()
-    {
+    public ArrayList<Person> getAllPersons() {
         SQLiteDatabase db = helper.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_PERSON,
-                null,
-                null,
-                null,
-                null, null, null);
+                null, null, null, null, null, null);
 
         ArrayList<Person> personArrayList = new ArrayList<>();
 
-        if(cursor!=null && cursor.moveToFirst())
-        {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 int index_name = cursor.getColumnIndex(COLUMN_NAME);
                 int index_id = cursor.getColumnIndex(COLUMN_ID);
-                int index_author = cursor.getColumnIndex(COLUMN_EMAIL);
-                int index_date = cursor.getColumnIndex(COLUMN_PASSWORD);
+                int index_email = cursor.getColumnIndex(COLUMN_EMAIL);
+                int index_password = cursor.getColumnIndex(COLUMN_PASSWORD);
 
                 Person person = new Person();
                 person.setId(cursor.getInt(index_id));
                 person.setName(cursor.getString(index_name));
-                person.setEmail(cursor.getString(index_author));
-                person.setPassword(cursor.getString(index_date));
+                person.setEmail(cursor.getString(index_email));
+                person.setPassword(cursor.getString(index_password));
                 personArrayList.add(person);
-            }while(cursor.moveToNext());
+            } while (cursor.moveToNext());
 
             cursor.close();
         }
@@ -110,8 +107,7 @@ public class Database {
         return personArrayList;
     }
 
-    public int update(Person person)
-    {
+    public int update(Person person) {
         SQLiteDatabase db = helper.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_NAME, person.getName());
@@ -119,27 +115,25 @@ public class Database {
         cv.put(COLUMN_PASSWORD, person.getPassword());
         int id = db.update(TABLE_PERSON,
                 cv,
-                COLUMN_ID+"=?",
+                COLUMN_ID + "=?",
                 new String[]{String.valueOf(person.getId())});
         db.close();
         return id;
     }
 
-    public int deletePerson(int id)
-    {
+    public int deletePerson(int id) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        int count = db.delete(TABLE_PERSON, COLUMN_ID+"=?",
+        int count = db.delete(TABLE_PERSON, COLUMN_ID + "=?",
                 new String[]{String.valueOf(id)});
         db.close();
         return count;
     }
 
-    public void close()
-    {
+    public void close() {
         helper.close();
     }
-    public boolean isEmailExists(String email)
-    {
+
+    public boolean isEmailExists(String email) {
         SQLiteDatabase db = helper.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_PERSON,
@@ -150,14 +144,13 @@ public class Database {
 
         boolean exists = (cursor != null && cursor.moveToFirst());
 
-        if(cursor != null) cursor.close();
+        if (cursor != null) cursor.close();
         db.close();
 
         return exists;
     }
 
-    public Person login(String email, String password)
-    {
+    public Person login(String email, String password) {
         SQLiteDatabase db = helper.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_PERSON,
@@ -168,8 +161,7 @@ public class Database {
 
         Person person = null;
 
-        if(cursor != null && cursor.moveToFirst())
-        {
+        if (cursor != null && cursor.moveToFirst()) {
             int idIndex = cursor.getColumnIndex(COLUMN_ID);
             int nameIndex = cursor.getColumnIndex(COLUMN_NAME);
 
@@ -186,10 +178,17 @@ public class Database {
         return person;
     }
 
+    // ✅ NEW: Check if table is empty (for test data)
+    public boolean isTableEmpty() {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_PERSON, null, null, null, null, null, null);
+        boolean empty = (cursor == null || cursor.getCount() == 0);
+        if (cursor != null) cursor.close();
+        db.close();
+        return empty;
+    }
 
-
-    private class DBHelper extends SQLiteOpenHelper
-    {
+    private class DBHelper extends SQLiteOpenHelper {
 
         public DBHelper(@Nullable Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -197,22 +196,18 @@ public class Database {
 
         @Override
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
-            // schema
-            String createTable = "CREATE TABLE "+TABLE_PERSON+"("
-                    +COLUMN_ID+" INTEGER PRIMARY KEY AUTOINCREMENT, "
-                    +COLUMN_NAME+" TEXT, "
-                    +COLUMN_EMAIL+" TEXT, "
-                    +COLUMN_PASSWORD+" TEXT)";
+            String createTable = "CREATE TABLE " + TABLE_PERSON + "("
+                    + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + COLUMN_NAME + " TEXT, "
+                    + COLUMN_EMAIL + " TEXT, "
+                    + COLUMN_PASSWORD + " TEXT)";
             sqLiteDatabase.execSQL(createTable);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TABLE_PERSON);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_PERSON);
             onCreate(sqLiteDatabase);
         }
-
-
     }
-
 }

@@ -1,9 +1,9 @@
 package com.example.project;
 
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.*;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,60 +41,58 @@ public class Login extends AppCompatActivity {
         db = new Database(this);
         db.open();
 
+        if (db.isTableEmpty()) {
+            db.insertTestData();
+            Toast.makeText(this, "Test data inserted!", Toast.LENGTH_SHORT).show();
+        }
+
+        signup.setOnClickListener(v -> {
+            Intent i = new Intent(Login.this, Signup.class);
+            startActivity(i);
+        });
+
         boolean isLoggedIn = sp.getBoolean("isLoggedIn", false);
 
-        if(isLoggedIn)
-        {
+        if (isLoggedIn) {
             String savedEmail = sp.getString("email", "");
             mail.setText(savedEmail);
             remember.setChecked(true);
-
             Toast.makeText(this, "Welcome back " + savedEmail, Toast.LENGTH_SHORT).show();
-
-            // Intent i = new Intent(Login.this, Home.class);
-            // startActivity(i);
-            // finish();
         }
 
         login.setOnClickListener(v -> {
+            String e = mail.getText().toString().trim();
+            String p = password.getText().toString().trim();
 
-            String e = mail.getText().toString();
-            String p = password.getText().toString();
-
-            if(e.isEmpty() || p.isEmpty())
-            {
+            if (e.isEmpty() || p.isEmpty()) {
                 Toast.makeText(this, "Enter email & password", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             Person person = db.login(e, p);
 
-            if(person != null)
-            {
+            if (person != null) {
                 Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
 
-                // ✅ REMEMBER ME
-                if(remember.isChecked())
-                {
+                if (remember.isChecked()) {
                     editor.putBoolean("isLoggedIn", true);
                     editor.putString("email", e);
                     editor.apply();
-                }
-                else
-                {
+                } else {
                     editor.clear();
                     editor.apply();
                 }
 
-                // Move to Home
                 // Intent i = new Intent(Login.this, Home.class);
                 // startActivity(i);
                 // finish();
-            }
-            else
-            {
+            } else {
                 Toast.makeText(this, "Invalid Credentials", Toast.LENGTH_SHORT).show();
             }
+        });
+        forgotpass.setOnClickListener( v->
+        {
+            Intent i = new Intent(Login.this, ForgetPassword.class);
         });
     }
 }

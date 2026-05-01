@@ -35,7 +35,7 @@ public class SplashScreen extends AppCompatActivity {
         ivLogo.startAnimation(anim);
 
         new Handler().postDelayed(() -> {
-            startActivity(new Intent(SplashScreen.this, Signup.class));
+            startActivity(new Intent(SplashScreen.this, Login.class));
             finish();
         }, 5000);
 
