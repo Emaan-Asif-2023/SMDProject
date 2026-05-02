@@ -4,12 +4,12 @@ public class Booking {
     private int id;
     private String checkIn;
     private String checkOut;
-    private int personId; // Links to Person.java
-    private int roomId;   // Links to Room.java
-
+    private int personId;
+    private int roomId;
     private String hotelName;
     private String roomNumber;
     private String roomType;
+    private double price;
 
     public Booking() {}
 
@@ -43,4 +43,6 @@ public class Booking {
 
     public String getRoomType() { return roomType; }
     public void setRoomType(String roomType) { this.roomType = roomType; }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
 }

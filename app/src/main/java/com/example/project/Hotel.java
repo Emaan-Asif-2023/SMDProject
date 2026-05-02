@@ -5,12 +5,10 @@ public class Hotel {
     private String name;
     private String location;
     private String description;
-    private int imageResId; // NEW: Stores R.drawable.your_image_name
+    private int imageResId;
 
-    // Empty constructor required for creation
     public Hotel() {}
 
-    // Updated constructor
     public Hotel(String name, String location, String description, int imageResId) {
         this.name = name;
         this.location = location;

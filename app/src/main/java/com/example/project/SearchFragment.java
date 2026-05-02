@@ -55,6 +55,7 @@ public class SearchFragment extends Fragment {
     }
 
     private void setupClickListeners() {
+        // Location click
         layoutLocation.setOnClickListener(v -> {
             LocationDialog locationDialog = new LocationDialog();
             locationDialog.setOnLocationSelectedListener((location, latitude, longitude) -> {
@@ -65,8 +66,10 @@ public class SearchFragment extends Fragment {
             locationDialog.show(getChildFragmentManager(), "LocationDialog");
         });
 
+        // Check-in date click - FIXED
         layoutCheckIn.setOnClickListener(v -> {
-            DatePickerDialog datePicker = new DatePickerDialog(true, (date, isCheckIn) -> {
+            DatePickerDialog datePicker = new DatePickerDialog();
+            datePicker.setOnDateSelectedListener(true, (date, isCheckIn) -> {
                 checkInDate = date;
                 textViewCheckInDate.setText(formatDateForDisplay(date));
                 textViewCheckInDate.setTextColor(getResources().getColor(android.R.color.black));
@@ -74,8 +77,10 @@ public class SearchFragment extends Fragment {
             datePicker.show(getChildFragmentManager(), "CheckInDatePicker");
         });
 
+        // Check-out date click - FIXED
         layoutCheckOut.setOnClickListener(v -> {
-            DatePickerDialog datePicker = new DatePickerDialog(false, (date, isCheckIn) -> {
+            DatePickerDialog datePicker = new DatePickerDialog();
+            datePicker.setOnDateSelectedListener(false, (date, isCheckIn) -> {
                 checkOutDate = date;
                 textViewCheckOutDate.setText(formatDateForDisplay(date));
                 textViewCheckOutDate.setTextColor(getResources().getColor(android.R.color.black));
@@ -83,8 +88,10 @@ public class SearchFragment extends Fragment {
             datePicker.show(getChildFragmentManager(), "CheckOutDatePicker");
         });
 
+        // Guests click - FIXED
         layoutGuests.setOnClickListener(v -> {
-            GuestPickerDialog guestPicker = new GuestPickerDialog((adultsCount, childrenCount) -> {
+            GuestPickerDialog guestPicker = new GuestPickerDialog();
+            guestPicker.setOnGuestsSelectedListener((adultsCount, childrenCount) -> {
                 adults = adultsCount;
                 children = childrenCount;
                 updateGuestsDisplay();

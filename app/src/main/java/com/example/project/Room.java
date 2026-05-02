@@ -2,9 +2,9 @@ package com.example.project;
 public class Room {
     private int id;
     private String roomNumber;
-    private String type; // e.g., Single, Double, Suite
+    private String type;
     private double price;
-    private int hotelId; // Links to Hotel.java
+    private int hotelId;
 
     public Room() {}
 

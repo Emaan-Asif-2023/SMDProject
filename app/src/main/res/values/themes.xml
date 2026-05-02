@@ -22,5 +22,15 @@
         <item name="android:textColorSecondary">#6B6B6B</item>
     </style>
 
+    <style name="Theme.HotelBooking" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#003580</item>
+        <item name="colorPrimaryVariant">#002266</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#FEBB02</item>
+        <item name="colorSecondaryVariant">#E5A800</item>
+        <item name="colorOnSecondary">#000000</item>
+        <item name="android:statusBarColor">#002266</item>
+    </style>
+
     <style name="Theme.Project" parent="Base.Theme.Project" />
 </resources>

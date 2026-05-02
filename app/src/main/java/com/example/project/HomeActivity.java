@@ -15,12 +15,18 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        // Initialize views
         viewPager = findViewById(R.id.viewPager);
         bottomNavigationView = findViewById(R.id.bottomNavigation);
 
+        // Set up ViewPager
         ViewPagerAdapter adapter = new ViewPagerAdapter(this);
         viewPager.setAdapter(adapter);
 
+        // Disable swipe if you want navigation only through bottom tabs
+        viewPager.setUserInputEnabled(false);
+
+        // Set up BottomNavigationView with ViewPager
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.navigation_search) {
@@ -39,6 +45,7 @@ public class HomeActivity extends AppCompatActivity {
             return false;
         });
 
+        // Sync BottomNavigationView when ViewPager page changes
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
@@ -59,6 +66,5 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
-
     }
 }
