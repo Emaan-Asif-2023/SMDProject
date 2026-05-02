@@ -59,8 +59,22 @@ public class Login extends AppCompatActivity {
         db = new Database(this);
         db.open();
 
+        // Check if tables are empty to insert test data
         if (db.isTableEmpty()) {
-            db.insertTestData();
+
+            db.insertPerson(new Person("John Doe", "john@test.com", "12345678"));
+            db.insertPerson(new Person("Jane Smith", "jane@test.com", "password"));
+
+            db.insertHotel(new Hotel("Grand Plaza", "New York", "A luxury 5-star experience in the city center.", android.R.drawable.ic_menu_gallery));
+            db.insertHotel(new Hotel("Sunset Resort", "Los Angeles", "Beautiful beachfront property with ocean views.", android.R.drawable.ic_menu_camera));
+            db.insertHotel(new Hotel("Mountain View Inn", "Denver", "Cozy rooms located near the Rocky Mountains.", android.R.drawable.ic_menu_mapmode));
+
+
+            db.insertRoom(new Room("101", "Single", 99.99, 1));
+            db.insertRoom(new Room("102", "Double", 149.99, 1));
+            db.insertRoom(new Room("201", "Suite", 299.99, 2));
+            db.insertRoom(new Room("301", "Double", 119.99, 3));
+
             Toast.makeText(this, "Test data inserted!", Toast.LENGTH_SHORT).show();
         }
 

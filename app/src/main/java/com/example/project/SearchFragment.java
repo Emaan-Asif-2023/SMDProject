@@ -55,7 +55,6 @@ public class SearchFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        // Location click
         layoutLocation.setOnClickListener(v -> {
             LocationDialog locationDialog = new LocationDialog();
             locationDialog.setOnLocationSelectedListener((location, latitude, longitude) -> {
@@ -66,7 +65,6 @@ public class SearchFragment extends Fragment {
             locationDialog.show(getChildFragmentManager(), "LocationDialog");
         });
 
-        // Check-in date click
         layoutCheckIn.setOnClickListener(v -> {
             DatePickerDialog datePicker = new DatePickerDialog(true, (date, isCheckIn) -> {
                 checkInDate = date;
@@ -76,7 +74,6 @@ public class SearchFragment extends Fragment {
             datePicker.show(getChildFragmentManager(), "CheckInDatePicker");
         });
 
-        // Check-out date click
         layoutCheckOut.setOnClickListener(v -> {
             DatePickerDialog datePicker = new DatePickerDialog(false, (date, isCheckIn) -> {
                 checkOutDate = date;
@@ -86,7 +83,6 @@ public class SearchFragment extends Fragment {
             datePicker.show(getChildFragmentManager(), "CheckOutDatePicker");
         });
 
-        // Guests click
         layoutGuests.setOnClickListener(v -> {
             GuestPickerDialog guestPicker = new GuestPickerDialog((adultsCount, childrenCount) -> {
                 adults = adultsCount;
@@ -100,7 +96,7 @@ public class SearchFragment extends Fragment {
         // Search button click
         buttonSearch.setOnClickListener(v -> {
             if (validateForm()) {
-                Intent intent = new Intent(getActivity(), SearchResultsActivity.class);
+                Intent intent = new Intent(getActivity(), HotelListActivity.class);
                 intent.putExtra("location", selectedLocation);
                 intent.putExtra("checkInDate", checkInDate);
                 intent.putExtra("checkOutDate", checkOutDate);

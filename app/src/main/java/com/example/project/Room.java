@@ -1,0 +1,32 @@
+package com.example.project;
+public class Room {
+    private int id;
+    private String roomNumber;
+    private String type; // e.g., Single, Double, Suite
+    private double price;
+    private int hotelId; // Links to Hotel.java
+
+    public Room() {}
+
+    public Room(String roomNumber, String type, double price, int hotelId) {
+        this.roomNumber = roomNumber;
+        this.type = type;
+        this.price = price;
+        this.hotelId = hotelId;
+    }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getRoomNumber() { return roomNumber; }
+    public void setRoomNumber(String roomNumber) { this.roomNumber = roomNumber; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
+
+    public int getHotelId() { return hotelId; }
+    public void setHotelId(int hotelId) { this.hotelId = hotelId; }
+}

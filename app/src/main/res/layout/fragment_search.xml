@@ -248,8 +248,7 @@
                 </LinearLayout>
 
             </LinearLayout>
-
-            <!-- Search Button -->
+->
             <Button
                 android:id="@+id/buttonSearch"
                 android:layout_width="match_parent"
