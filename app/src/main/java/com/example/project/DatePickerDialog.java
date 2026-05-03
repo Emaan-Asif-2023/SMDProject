@@ -10,9 +10,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -26,8 +28,8 @@ public class DatePickerDialog extends DialogFragment {
     private boolean isCheckIn;
     private Date selectedDate;
     private OnDateSelectedListener listener;
+    private String minDateString;
 
-    // Empty constructor required for DialogFragment
     public DatePickerDialog() {
         this.selectedDate = new Date();
     }
@@ -41,38 +43,67 @@ public class DatePickerDialog extends DialogFragment {
         this.listener = listener;
     }
 
+    public void setMinDate(String minDate) {
+        this.minDateString = minDate;
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(requireContext());
+        Dialog dialog = new Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Dialog);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_date_picker);
 
-        // Set dialog window to full width with margins
         Window window = dialog.getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.CENTER);
-
-            // Add margin to the dialog window
-            WindowManager.LayoutParams params = window.getAttributes();
-            params.horizontalMargin = 20; // 20dp margin on each side
-            params.verticalMargin = 10;
-            window.setAttributes(params);
         }
+
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(false);
 
         calendarView = dialog.findViewById(R.id.calendarView);
         buttonConfirm = dialog.findViewById(R.id.buttonConfirm);
         buttonCancel = dialog.findViewById(R.id.buttonCancel);
 
-        // Set minimum date to today
-        calendarView.setMinDate(System.currentTimeMillis() - 1000);
+        long calculatedMinDate = System.currentTimeMillis() - 1000;
+
+        if (minDateString != null && !minDateString.isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Date minDate = sdf.parse(minDateString);
+                if (minDate != null) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(minDate);
+                    cal.add(Calendar.DAY_OF_MONTH, 1);
+                    calculatedMinDate = cal.getTimeInMillis();
+                    selectedDate = cal.getTime();
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        final long minDateMillis = calculatedMinDate;
+
+        calendarView.setMinDate(minDateMillis);
+        calendarView.setDate(minDateMillis);
+
+        final CalendarView finalCalendarView = calendarView;
 
         calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, month, dayOfMonth);
-            selectedDate = calendar.getTime();
+
+            if (calendar.getTimeInMillis() < minDateMillis) {
+                Toast.makeText(getContext(),
+                        "Please select a valid date",
+                        Toast.LENGTH_SHORT).show();
+                finalCalendarView.setDate(minDateMillis);
+                selectedDate = new Date(minDateMillis);
+            } else {
+                selectedDate = calendar.getTime();
+            }
         });
 
         buttonConfirm.setOnClickListener(v -> {
@@ -90,19 +121,28 @@ public class DatePickerDialog extends DialogFragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onResume() {
+        super.onResume();
         Dialog dialog = getDialog();
-        if (dialog != null) {
+        if (dialog != null && dialog.getWindow() != null) {
             Window window = dialog.getWindow();
-            if (window != null) {
-                // Set dialog width to match parent with margins
-                WindowManager.LayoutParams params = window.getAttributes();
-                params.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
-                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-                params.gravity = Gravity.CENTER;
-                window.setAttributes(params);
-            }
+
+
+            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.90);
+            int height = WindowManager.LayoutParams.WRAP_CONTENT;
+
+
+            WindowManager.LayoutParams params = window.getAttributes();
+            params.width = width;
+            params.height = height;
+            params.gravity = Gravity.CENTER;
+
+
+            params.x = 0;
+            params.y = 0;
+
+            window.setAttributes(params);
+            window.setGravity(Gravity.CENTER);
         }
     }
 }

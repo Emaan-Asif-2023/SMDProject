@@ -5,6 +5,29 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
+    <!-- CalendarView Custom Styles -->
+    <style name="CalendarViewCustom" parent="ThemeOverlay.MaterialComponents">
+        <item name="colorPrimary">#003580</item>
+        <item name="colorAccent">#003580</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:textColorPrimary">#1A1A1A</item>
+        <item name="android:textColorSecondary">#1A1A1A</item>
+        <item name="android:textColorTertiary">#1A1A1A</item>
+        <item name="colorOnSurface">#003580</item>
+    </style>
+
+    <style name="CalendarDateCustom" parent="android:TextAppearance.DeviceDefault.Medium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#1A1A1A</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="CalendarWeekCustom" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#666666</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="CalendarDateStyle" parent="Widget.AppCompat.Button">
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">#000000</item>

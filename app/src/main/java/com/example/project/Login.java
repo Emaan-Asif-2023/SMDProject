@@ -47,19 +47,26 @@ public class Login extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
 
+
+        db = new Database(this);
+        db.open();
+        ensureTestDataExists();
+        fixAdminUser();
+        db.close();
+
         if (user != null) {
             String email = user.getEmail();
+            String name = user.getDisplayName() != null ? user.getDisplayName() : "User";
+
+
+            syncFirebaseUserToLocalDb(user);
+
             checkAdminAndRedirect(email);
             return;
         }
 
         sp = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
         editor = sp.edit();
-
-        db = new Database(this);
-        db.open();
-
-        fixAdminUser();
 
         signup.setOnClickListener(v -> {
             Intent i = new Intent(Login.this, Signup.class);
@@ -106,7 +113,9 @@ public class Login extends AppCompatActivity {
                                 editor.apply();
                             }
 
-                            fixAdminUser();
+
+                            FirebaseUser firebaseUser = auth.getCurrentUser();
+                            syncFirebaseUserToLocalDb(firebaseUser);
 
                             checkAdminAndRedirect(e);
                         }
@@ -125,26 +134,71 @@ public class Login extends AppCompatActivity {
         });
     }
 
-    private void fixAdminUser() {
-        Database db = new Database(Login.this);
-        db.open();
+    private void syncFirebaseUserToLocalDb(FirebaseUser firebaseUser) {
+        if (firebaseUser == null) return;
 
+        Database syncDb = new Database(Login.this);
+        syncDb.open();
+
+        String email = firebaseUser.getEmail();
+        String name = firebaseUser.getDisplayName();
+
+        if (name == null || name.isEmpty()) {
+            name = email.split("@")[0];
+        }
+
+        if (!syncDb.isEmailExists(email)) {
+
+            Person person = new Person(name, email, "");
+            person.setRole("user");
+
+            if (email.equals("admin@test.com")) {
+                person.setRole("admin");
+            }
+
+            syncDb.insertPerson(person);
+        }
+
+        syncDb.close();
+    }
+
+    private void ensureTestDataExists() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean dataInserted = prefs.getBoolean("testDataInserted", false);
+
+        if (!dataInserted) {
+            if (db.isTableEmpty() || db.getAllHotels().isEmpty()) {
+                db.insertTestData();
+                Toast.makeText(this, "Loading hotel data...", Toast.LENGTH_SHORT).show();
+            }
+            prefs.edit().putBoolean("testDataInserted", true).apply();
+        } else {
+            if (db.getAllHotels().isEmpty()) {
+                db.insertTestData();
+                Toast.makeText(this, "Reloading hotel data...", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void fixAdminUser() {
         Person adminPerson = db.login("admin@test.com", "admin12345");
         if (adminPerson != null) {
-            adminPerson.setRole("admin");
-            db.update(adminPerson);
+            if (!"admin".equals(adminPerson.getRole())) {
+                adminPerson.setRole("admin");
+                db.update(adminPerson);
+            }
         } else {
             Person admin = new Person("Admin", "admin@test.com", "admin12345");
             admin.setRole("admin");
             db.insertPerson(admin);
         }
-        db.close();
     }
-    private void checkAdminAndRedirect(String email) {
-        Database db = new Database(Login.this);
-        db.open();
 
-        boolean isAdmin = db.isAdmin(email);
+    private void checkAdminAndRedirect(String email) {
+        Database checkDb = new Database(Login.this);
+        checkDb.open();
+
+        boolean isAdmin = checkDb.isAdmin(email);
 
         if (isAdmin) {
             startActivity(new Intent(Login.this, AdminDashboardActivity.class));
@@ -152,7 +206,15 @@ public class Login extends AppCompatActivity {
             startActivity(new Intent(Login.this, HomeActivity.class));
         }
 
-        db.close();
+        checkDb.close();
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (db != null) {
+            db.close();
+        }
     }
 }

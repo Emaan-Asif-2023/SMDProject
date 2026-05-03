@@ -50,18 +50,22 @@ public class AdminUsersActivity extends AppCompatActivity {
     }
 
     private void loadUsers() {
-        personsList = db.getAllPersons(); // Now includes role
+        personsList = db.getAllPersons();
         displayList.clear();
         for (Person person : personsList) {
             String role = person.getRole() != null ? person.getRole() : "user";
-            displayList.add(person.getName() + " (" + person.getEmail() + ") - " + role);
+            displayList.add(person.getId() + ": " + person.getName() + " (" + person.getEmail() + ") - " + role);
         }
         adapter.notifyDataSetChanged();
+
+        if (personsList.isEmpty()) {
+            Toast.makeText(this, "No users found", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showUserOptions(int position) {
         Person person = personsList.get(position);
-        String[] options = {"Edit User", "Delete User", "Cancel"};
+        String[] options = {"Edit User", "Change Role", "Delete User", "Cancel"};
 
         new AlertDialog.Builder(this)
                 .setTitle("User: " + person.getName())
@@ -71,6 +75,9 @@ public class AdminUsersActivity extends AppCompatActivity {
                             showEditUserDialog(person);
                             break;
                         case 1:
+                            showChangeRoleDialog(person);
+                            break;
+                        case 2:
                             showDeleteUserDialog(person);
                             break;
                     }
@@ -102,13 +109,19 @@ public class AdminUsersActivity extends AppCompatActivity {
                         return;
                     }
 
+
+                    if (!email.equals(person.getEmail()) && db.isEmailExists(email)) {
+                        Toast.makeText(this, "Email already exists", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
                     person.setName(name);
                     person.setEmail(email);
                     person.setPassword(password);
 
                     int rows = db.update(person);
                     if (rows > 0) {
-                        Toast.makeText(this, "User updated", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "User updated successfully", Toast.LENGTH_SHORT).show();
                         loadUsers();
                     } else {
                         Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show();
@@ -116,31 +129,6 @@ public class AdminUsersActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-    }
-
-    private void showDeleteUserDialog(Person person) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete User")
-                .setMessage("Are you sure you want to delete " + person.getName() + "?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    int count = db.deletePerson(person.getId());
-                    if (count > 0) {
-                        Toast.makeText(this, "User deleted", Toast.LENGTH_SHORT).show();
-                        loadUsers();
-                    } else {
-                        Toast.makeText(this, "Delete failed", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (db != null) {
-            db.close();
-        }
     }
 
     private void showChangeRoleDialog(Person person) {
@@ -152,13 +140,79 @@ public class AdminUsersActivity extends AppCompatActivity {
                 .setTitle("Change Role for " + person.getName())
                 .setSingleChoiceItems(roles, checkedItem, (dialog, which) -> {
                     String newRole = roles[which];
-                    if (db.updateUserRole(person.getId(), newRole)) {
+
+
+                    if (person.getEmail().equals("admin@test.com")) {
+                        Toast.makeText(this, "Cannot change default admin role", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                        return;
+                    }
+
+                    boolean success = db.updateUserRole(person.getId(), newRole);
+                    if (success) {
                         Toast.makeText(this, "Role updated to " + newRole, Toast.LENGTH_SHORT).show();
                         loadUsers();
+                    } else {
+                        Toast.makeText(this, "Failed to update role", Toast.LENGTH_SHORT).show();
                     }
                     dialog.dismiss();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private void showDeleteUserDialog(Person person) {
+
+        if (person.getEmail().equals("admin@test.com")) {
+            Toast.makeText(this, "Cannot delete default admin account", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Delete User")
+                .setMessage("Are you sure you want to delete " + person.getName() + "?\n\nThis action cannot be undone!")
+                .setPositiveButton("Delete", (dialog, which) -> {
+
+                    ArrayList<Booking> userBookings = db.getBookingsByUser(person.getId());
+                    if (!userBookings.isEmpty()) {
+                        new AlertDialog.Builder(this)
+                                .setTitle("User has bookings")
+                                .setMessage("This user has " + userBookings.size() + " booking(s). Deleting the user will leave orphaned bookings.\n\nContinue?")
+                                .setPositiveButton("Delete Anyway", (dialog2, which2) -> {
+                                    performDelete(person);
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                    } else {
+                        performDelete(person);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void performDelete(Person person) {
+
+        SavedDatabase savedDb = new SavedDatabase(this);
+        savedDb.open();
+
+        savedDb.close();
+
+
+        int count = db.deletePerson(person.getId());
+        if (count > 0) {
+            Toast.makeText(this, "User deleted successfully", Toast.LENGTH_SHORT).show();
+            loadUsers();
+        } else {
+            Toast.makeText(this, "Delete failed. User may not exist.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (db != null) {
+            db.close();
+        }
     }
 }

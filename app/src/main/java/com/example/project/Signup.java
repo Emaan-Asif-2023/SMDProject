@@ -79,14 +79,16 @@ public class Signup extends AppCompatActivity {
                 return;
             }
 
-            // Firebase Authentication only
-            auth.createUserWithEmailAndPassword(e,p)
+            auth.createUserWithEmailAndPassword(e, p)
                     .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                         @Override
                         public void onSuccess(AuthResult authResult) {
-                            // saving user to local database
+
                             Person person = new Person(n, e, p);
+                            person.setRole("user");
                             long id = db.insertPerson(person);
+
+                            db.close();
 
                             Toast.makeText(Signup.this, "Account created!", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(Signup.this, HomeActivity.class));
@@ -102,9 +104,15 @@ public class Signup extends AppCompatActivity {
         });
 
         login.setOnClickListener(v -> {
+            db.close();
             Intent i = new Intent(Signup.this, Login.class);
             startActivity(i);
             finish();
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }

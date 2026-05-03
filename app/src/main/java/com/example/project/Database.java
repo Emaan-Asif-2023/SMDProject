@@ -167,9 +167,12 @@ public class Database {
 
     public boolean isTableEmpty() {
         SQLiteDatabase db = helper.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_PERSON, null, null, null, null, null, null);
-        boolean empty = (cursor == null || cursor.getCount() == 0);
-        if (cursor != null) cursor.close();
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_HOTEL, null);
+        boolean empty = true;
+        if (cursor != null && cursor.moveToFirst()) {
+            empty = cursor.getInt(0) == 0;
+            cursor.close();
+        }
         db.close();
         return empty;
     }
@@ -321,6 +324,14 @@ public class Database {
         return list;
     }
 
+    public int deleteRoom(int roomId) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        int count = db.delete(TABLE_ROOM, COL_ROOM_ID + "=?",
+                new String[]{String.valueOf(roomId)});
+        db.close();
+        return count;
+    }
+
     // ==========================================
     // BOOKING METHODS
     // ==========================================
@@ -334,6 +345,19 @@ public class Database {
         long id = db.insert(TABLE_BOOKING, null, cv);
         db.close();
         return id;
+    }
+
+    public int updateBooking(Booking booking) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL_BOOKING_CHECK_IN, booking.getCheckIn());
+        cv.put(COL_BOOKING_CHECK_OUT, booking.getCheckOut());
+        cv.put(COL_BOOKING_PERSON_ID, booking.getPersonId());
+        cv.put(COL_BOOKING_ROOM_ID, booking.getRoomId());
+        int rows = db.update(TABLE_BOOKING, cv, COL_BOOKING_ID + "=?",
+                new String[]{String.valueOf(booking.getId())});
+        db.close();
+        return rows;
     }
 
     public ArrayList<Booking> getBookingsByUser(int personId) {
@@ -382,7 +406,6 @@ public class Database {
         ArrayList<Booking> list = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
 
-        // Use explicit column names and aliases to avoid confusion
         String query = "SELECT " +
                 "b." + COL_BOOKING_ID + " as booking_id, " +
                 "b." + COL_BOOKING_CHECK_IN + " as check_in, " +
@@ -406,7 +429,6 @@ public class Database {
             do {
                 Booking b = new Booking();
 
-                // Use column names from the query aliases
                 b.setId(getIntFromCursor(cursor, "booking_id"));
                 b.setCheckIn(getStringFromCursor(cursor, "check_in"));
                 b.setCheckOut(getStringFromCursor(cursor, "check_out"));
@@ -419,11 +441,6 @@ public class Database {
                 b.setPersonEmail(getStringFromCursor(cursor, "person_email"));
 
                 list.add(b);
-
-                android.util.Log.d("BOOKING_DEBUG",
-                        "Booking ID: " + b.getId() +
-                                ", Guest: " + b.getPersonName() +
-                                ", Hotel: " + b.getHotelName());
 
             } while (cursor.moveToNext());
             cursor.close();
@@ -460,77 +477,112 @@ public class Database {
             helper.close();
         }
     }
+
     public void insertTestData() {
-        Person admin = new Person("Admin", "admin@test.com", "admin12345");
-        admin.setRole("admin");
-        insertPerson(admin);
+        SQLiteDatabase db = helper.getWritableDatabase();
 
-        insertPerson(new Person("John Doe", "john@test.com", "12345678"));
-        insertPerson(new Person("Jane Smith", "jane@test.com", "password123"));
+        // Insert Persons
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_NAME, "Admin");
+        cv.put(COLUMN_EMAIL, "admin@test.com");
+        cv.put(COLUMN_PASSWORD, "admin12345");
+        cv.put(COLUMN_ROLE, "admin");
+        db.insert(TABLE_PERSON, null, cv);
 
-        insertHotel(new Hotel("Grand Plaza", "New York", "A luxury 5-star experience in the city center.", android.R.drawable.ic_menu_gallery));
-        insertHotel(new Hotel("The Central Inn", "New York", "Affordable comfort near Times Square.", android.R.drawable.ic_menu_camera));
+        cv.clear();
+        cv.put(COLUMN_NAME, "John Doe");
+        cv.put(COLUMN_EMAIL, "john@test.com");
+        cv.put(COLUMN_PASSWORD, "12345678");
+        cv.put(COLUMN_ROLE, "user");
+        db.insert(TABLE_PERSON, null, cv);
 
-        insertHotel(new Hotel("Sunset Resort", "Los Angeles", "Beautiful beachfront property with ocean views.", android.R.drawable.ic_menu_mapmode));
-        insertHotel(new Hotel("LAX Airport Hotel", "Los Angeles", "Convenient stay right next to the airport.", android.R.drawable.ic_menu_gallery));
+        cv.clear();
+        cv.put(COLUMN_NAME, "Jane Smith");
+        cv.put(COLUMN_EMAIL, "jane@test.com");
+        cv.put(COLUMN_PASSWORD, "password123");
+        cv.put(COLUMN_ROLE, "user");
+        db.insert(TABLE_PERSON, null, cv);
 
-        insertHotel(new Hotel("Ocean Breeze Resort", "Miami", "Stunning Art Deco hotel on South Beach.", android.R.drawable.ic_menu_camera));
-        insertHotel(new Hotel("Downtown Miami Hub", "Miami", "Modern rooms in the heart of the financial district.", android.R.drawable.ic_menu_mapmode));
+        long hotelId1 = insertHotelDirect(db, "Grand Plaza", "New York", "A luxury 5-star experience in the city center.", android.R.drawable.ic_menu_gallery);
+        long hotelId2 = insertHotelDirect(db, "The Central Inn", "New York", "Affordable comfort near Times Square.", android.R.drawable.ic_menu_camera);
+        long hotelId3 = insertHotelDirect(db, "Sunset Resort", "Los Angeles", "Beautiful beachfront property with ocean views.", android.R.drawable.ic_menu_mapmode);
+        long hotelId4 = insertHotelDirect(db, "LAX Airport Hotel", "Los Angeles", "Convenient stay right next to the airport.", android.R.drawable.ic_menu_gallery);
+        long hotelId5 = insertHotelDirect(db, "Ocean Breeze Resort", "Miami", "Stunning Art Deco hotel on South Beach.", android.R.drawable.ic_menu_camera);
+        long hotelId6 = insertHotelDirect(db, "Downtown Miami Hub", "Miami", "Modern rooms in the heart of the financial district.", android.R.drawable.ic_menu_mapmode);
+        long hotelId7 = insertHotelDirect(db, "The Windy Tower", "Chicago", "Luxury suites overlooking Lake Michigan.", android.R.drawable.ic_menu_gallery);
+        long hotelId8 = insertHotelDirect(db, "Bean City Lodge", "Chicago", "Cozy boutique hotel near Millennium Park.", android.R.drawable.ic_menu_camera);
+        long hotelId9 = insertHotelDirect(db, "Mountain View Inn", "Denver", "Cozy rooms located near the Rocky Mountains.", android.R.drawable.ic_menu_mapmode);
+        long hotelId10 = insertHotelDirect(db, "Mile High Suites", "Denver", "Spacious suites perfect for families.", android.R.drawable.ic_menu_gallery);
 
-        insertHotel(new Hotel("The Windy Tower", "Chicago", "Luxury suites overlooking Lake Michigan.", android.R.drawable.ic_menu_gallery));
-        insertHotel(new Hotel("Bean City Lodge", "Chicago", "Cozy boutique hotel near Millennium Park.", android.R.drawable.ic_menu_camera));
+        insertRoomDirect(db, "101", "Single", 120.00, (int) hotelId1);
+        insertRoomDirect(db, "102", "Double", 180.00, (int) hotelId1);
+        insertRoomDirect(db, "103", "Suite", 350.00, (int) hotelId1);
 
-        insertHotel(new Hotel("Mountain View Inn", "Denver", "Cozy rooms located near the Rocky Mountains.", android.R.drawable.ic_menu_mapmode));
-        insertHotel(new Hotel("Mile High Suites", "Denver", "Spacious suites perfect for families.", android.R.drawable.ic_menu_gallery));
+        insertRoomDirect(db, "201", "Single", 89.99, (int) hotelId2);
+        insertRoomDirect(db, "202", "Double", 129.99, (int) hotelId2);
+        insertRoomDirect(db, "203", "Double", 129.99, (int) hotelId2);
 
+        insertRoomDirect(db, "101", "Ocean View Single", 150.00, (int) hotelId3);
+        insertRoomDirect(db, "102", "Ocean View Double", 220.00, (int) hotelId3);
+        insertRoomDirect(db, "103", "Presidential Suite", 500.00, (int) hotelId3);
 
-        insertRoom(new Room("101", "Single", 120.00, 1));
-        insertRoom(new Room("102", "Double", 180.00, 1));
-        insertRoom(new Room("103", "Suite", 350.00, 1));
+        insertRoomDirect(db, "101", "Standard", 75.00, (int) hotelId4);
+        insertRoomDirect(db, "102", "Standard", 75.00, (int) hotelId4);
+        insertRoomDirect(db, "103", "Deluxe", 110.00, (int) hotelId4);
 
-        insertRoom(new Room("201", "Single", 89.99, 2));
-        insertRoom(new Room("202", "Double", 129.99, 2));
-        insertRoom(new Room("203", "Double", 129.99, 2));
+        insertRoomDirect(db, "501", "King Room", 200.00, (int) hotelId5);
+        insertRoomDirect(db, "502", "Twin Room", 200.00, (int) hotelId5);
+        insertRoomDirect(db, "503", "Penthouse", 800.00, (int) hotelId5);
 
-        insertRoom(new Room("101", "Ocean View Single", 150.00, 3));
-        insertRoom(new Room("102", "Ocean View Double", 220.00, 3));
-        insertRoom(new Room("103", "Presidential Suite", 500.00, 3));
+        insertRoomDirect(db, "301", "Single", 95.00, (int) hotelId6);
+        insertRoomDirect(db, "302", "Double", 140.00, (int) hotelId6);
 
-        insertRoom(new Room("101", "Standard", 75.00, 4));
-        insertRoom(new Room("102", "Standard", 75.00, 4));
-        insertRoom(new Room("103", "Deluxe", 110.00, 4));
+        insertRoomDirect(db, "801", "City View Double", 190.00, (int) hotelId7);
+        insertRoomDirect(db, "802", "Lake View Suite", 450.00, (int) hotelId7);
+        insertRoomDirect(db, "803", "Lake View Suite", 450.00, (int) hotelId7);
 
-        insertRoom(new Room("501", "King Room", 200.00, 5));
-        insertRoom(new Room("502", "Twin Room", 200.00, 5));
-        insertRoom(new Room("503", "Penthouse", 800.00, 5));
+        insertRoomDirect(db, "101", "Queen Room", 130.00, (int) hotelId8);
+        insertRoomDirect(db, "102", "King Room", 160.00, (int) hotelId8);
 
+        insertRoomDirect(db, "101", "Single", 99.99, (int) hotelId9);
+        insertRoomDirect(db, "102", "Double", 149.99, (int) hotelId9);
 
-        insertRoom(new Room("301", "Single", 95.00, 6));
-        insertRoom(new Room("302", "Double", 140.00, 6));
+        insertRoomDirect(db, "401", "Family Room", 180.00, (int) hotelId10);
+        insertRoomDirect(db, "402", "Executive Suite", 300.00, (int) hotelId10);
+        insertRoomDirect(db, "403", "Family Room", 180.00, (int) hotelId10);
+        insertRoomDirect(db, "404", "Executive Suite", 300.00, (int) hotelId10);
 
+        insertBookingDirect(db, "2023-12-01", "2023-12-05", 2, 1);
+        insertBookingDirect(db, "2023-11-20", "2023-11-22", 1, 5);
 
-        insertRoom(new Room("801", "City View Double", 190.00, 7));
-        insertRoom(new Room("802", "Lake View Suite", 450.00, 7));
-        insertRoom(new Room("803", "Lake View Suite", 450.00, 7));
+        db.close();
+    }
 
+    private long insertHotelDirect(SQLiteDatabase db, String name, String location, String desc, int imageRes) {
+        ContentValues cv = new ContentValues();
+        cv.put(COL_HOTEL_NAME, name);
+        cv.put(COL_HOTEL_LOCATION, location);
+        cv.put(COL_HOTEL_DESC, desc);
+        cv.put(COL_HOTEL_IMAGE, imageRes);
+        return db.insert(TABLE_HOTEL, null, cv);
+    }
 
-        insertRoom(new Room("101", "Queen Room", 130.00, 8));
-        insertRoom(new Room("102", "King Room", 160.00, 8));
+    private long insertRoomDirect(SQLiteDatabase db, String number, String type, double price, int hotelId) {
+        ContentValues cv = new ContentValues();
+        cv.put(COL_ROOM_NUMBER, number);
+        cv.put(COL_ROOM_TYPE, type);
+        cv.put(COL_ROOM_PRICE, price);
+        cv.put(COL_ROOM_HOTEL_ID, hotelId);
+        return db.insert(TABLE_ROOM, null, cv);
+    }
 
-
-        insertRoom(new Room("101", "Single", 99.99, 9));
-        insertRoom(new Room("102", "Double", 149.99, 9));
-
-
-        insertRoom(new Room("401", "Family Room", 180.00, 10));
-        insertRoom(new Room("402", "Executive Suite", 300.00, 10));
-        insertRoom(new Room("403", "Family Room", 180.00, 10));
-        insertRoom(new Room("404", "Executive Suite", 300.00, 10));
-
-
-
-        insertBooking(new Booking("2023-12-01", "2023-12-05", 2, 1)); // Jane Smith in Grand Plaza
-        insertBooking(new Booking("2023-11-20", "2023-11-22", 1, 5)); // John Doe in Ocean Breeze
+    private long insertBookingDirect(SQLiteDatabase db, String checkIn, String checkOut, int personId, int roomId) {
+        ContentValues cv = new ContentValues();
+        cv.put(COL_BOOKING_CHECK_IN, checkIn);
+        cv.put(COL_BOOKING_CHECK_OUT, checkOut);
+        cv.put(COL_BOOKING_PERSON_ID, personId);
+        cv.put(COL_BOOKING_ROOM_ID, roomId);
+        return db.insert(TABLE_BOOKING, null, cv);
     }
 
     private class DBHelper extends SQLiteOpenHelper {

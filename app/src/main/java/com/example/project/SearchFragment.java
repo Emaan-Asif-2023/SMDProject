@@ -10,6 +10,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class SearchFragment extends Fragment {
 
@@ -55,7 +59,6 @@ public class SearchFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        // Location click
         layoutLocation.setOnClickListener(v -> {
             LocationDialog locationDialog = new LocationDialog();
             locationDialog.setOnLocationSelectedListener((location, latitude, longitude) -> {
@@ -66,20 +69,31 @@ public class SearchFragment extends Fragment {
             locationDialog.show(getChildFragmentManager(), "LocationDialog");
         });
 
-        // Check-in date click - FIXED
         layoutCheckIn.setOnClickListener(v -> {
             DatePickerDialog datePicker = new DatePickerDialog();
             datePicker.setOnDateSelectedListener(true, (date, isCheckIn) -> {
                 checkInDate = date;
                 textViewCheckInDate.setText(formatDateForDisplay(date));
                 textViewCheckInDate.setTextColor(getResources().getColor(android.R.color.black));
+
+                if (!checkOutDate.isEmpty() && !isCheckOutAfterCheckIn()) {
+                    checkOutDate = "";
+                    textViewCheckOutDate.setText("Select date");
+                    textViewCheckOutDate.setTextColor(getResources().getColor(android.R.color.darker_gray));
+                    Toast.makeText(getContext(), "Check-out date reset. Please select a valid date.", Toast.LENGTH_SHORT).show();
+                }
             });
             datePicker.show(getChildFragmentManager(), "CheckInDatePicker");
         });
 
-        // Check-out date click - FIXED
         layoutCheckOut.setOnClickListener(v -> {
+            if (checkInDate.isEmpty()) {
+                Toast.makeText(getContext(), "Please select check-in date first", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             DatePickerDialog datePicker = new DatePickerDialog();
+            datePicker.setMinDate(checkInDate);  // Pass check-in date as minimum
             datePicker.setOnDateSelectedListener(false, (date, isCheckIn) -> {
                 checkOutDate = date;
                 textViewCheckOutDate.setText(formatDateForDisplay(date));
@@ -88,7 +102,6 @@ public class SearchFragment extends Fragment {
             datePicker.show(getChildFragmentManager(), "CheckOutDatePicker");
         });
 
-        // Guests click - FIXED
         layoutGuests.setOnClickListener(v -> {
             GuestPickerDialog guestPicker = new GuestPickerDialog();
             guestPicker.setOnGuestsSelectedListener((adultsCount, childrenCount) -> {
@@ -139,6 +152,21 @@ public class SearchFragment extends Fragment {
         }
     }
 
+    private boolean isCheckOutAfterCheckIn() {
+        if (checkInDate.isEmpty() || checkOutDate.isEmpty()) {
+            return true;
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        try {
+            Date checkIn = sdf.parse(checkInDate);
+            Date checkOut = sdf.parse(checkOutDate);
+            return checkOut != null && checkIn != null && checkOut.after(checkIn);
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
     private boolean validateForm() {
         if (selectedLocation.isEmpty()) {
             Toast.makeText(getContext(), "Please select a location", Toast.LENGTH_SHORT).show();
@@ -150,6 +178,10 @@ public class SearchFragment extends Fragment {
         }
         if (checkOutDate.isEmpty()) {
             Toast.makeText(getContext(), "Please select check-out date", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (!isCheckOutAfterCheckIn()) {
+            Toast.makeText(getContext(), "Check-out date must be after check-in date", Toast.LENGTH_SHORT).show();
             return false;
         }
         if (adults == 0) {
