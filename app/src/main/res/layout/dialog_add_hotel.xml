@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/etHotelName"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Hotel Name"
+        android:padding="12dp"
+        android:background="@drawable/edittext"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etHotelLocation"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Location"
+        android:padding="12dp"
+        android:background="@drawable/edittext"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etHotelPrice"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Price per Night ($)"
+        android:inputType="numberDecimal"
+        android:padding="12dp"
+        android:background="@drawable/edittext"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etHotelDescription"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:hint="Description"
+        android:gravity="top|start"
+        android:padding="12dp"
+        android:background="@drawable/edittext"/>
+
+</LinearLayout>

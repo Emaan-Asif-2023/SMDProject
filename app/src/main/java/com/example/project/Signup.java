@@ -79,10 +79,12 @@ public class Signup extends AppCompatActivity {
                 return;
             }
 
+            // Firebase Authentication only
             auth.createUserWithEmailAndPassword(e,p)
                     .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                         @Override
                         public void onSuccess(AuthResult authResult) {
+                            // saving user to local database
                             Person person = new Person(n, e, p);
                             long id = db.insertPerson(person);
 

@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
@@ -49,8 +48,9 @@ public class Login extends AppCompatActivity {
         user = auth.getCurrentUser();
 
         if (user != null) {
-            startActivity(new Intent(Login.this, HomeActivity.class));
-            finish();
+            String email = user.getEmail();
+            checkAdminAndRedirect(email);
+            return;
         }
 
         sp = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
@@ -59,24 +59,7 @@ public class Login extends AppCompatActivity {
         db = new Database(this);
         db.open();
 
-        // Check if tables are empty to insert test data
-        if (db.isTableEmpty()) {
-
-            db.insertPerson(new Person("John Doe", "john@test.com", "12345678"));
-            db.insertPerson(new Person("Jane Smith", "jane@test.com", "password"));
-
-            db.insertHotel(new Hotel("Grand Plaza", "New York", "A luxury 5-star experience in the city center.", android.R.drawable.ic_menu_gallery));
-            db.insertHotel(new Hotel("Sunset Resort", "Los Angeles", "Beautiful beachfront property with ocean views.", android.R.drawable.ic_menu_camera));
-            db.insertHotel(new Hotel("Mountain View Inn", "Denver", "Cozy rooms located near the Rocky Mountains.", android.R.drawable.ic_menu_mapmode));
-
-
-            db.insertRoom(new Room("101", "Single", 99.99, 1));
-            db.insertRoom(new Room("102", "Double", 149.99, 1));
-            db.insertRoom(new Room("201", "Suite", 299.99, 2));
-            db.insertRoom(new Room("301", "Double", 119.99, 3));
-
-            Toast.makeText(this, "Test data inserted!", Toast.LENGTH_SHORT).show();
-        }
+        fixAdminUser();
 
         signup.setOnClickListener(v -> {
             Intent i = new Intent(Login.this, Signup.class);
@@ -89,7 +72,6 @@ public class Login extends AppCompatActivity {
             String savedEmail = sp.getString("email", "");
             mail.setText(savedEmail);
             remember.setChecked(true);
-            Toast.makeText(this, "Welcome back " + savedEmail, Toast.LENGTH_SHORT).show();
         }
 
         login.setOnClickListener(v -> {
@@ -109,45 +91,68 @@ public class Login extends AppCompatActivity {
                 return;
             }
 
-            auth.signInWithEmailAndPassword(e,p)
+            auth.signInWithEmailAndPassword(e, p)
                     .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                         @Override
                         public void onSuccess(AuthResult authResult) {
                             Toast.makeText(Login.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(Login.this, HomeActivity.class));
+
+                            if (remember.isChecked()) {
+                                editor.putBoolean("isLoggedIn", true);
+                                editor.putString("email", e);
+                                editor.apply();
+                            } else {
+                                editor.clear();
+                                editor.apply();
+                            }
+
+                            fixAdminUser();
+
+                            checkAdminAndRedirect(e);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(Login.this, "Login failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Login.this, "Login failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
-
-            Person person = db.login(e, p);
-
-            if (person != null) {
-                Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
-
-                if (remember.isChecked()) {
-                    editor.putBoolean("isLoggedIn", true);
-                    editor.putString("email", e);
-                    editor.apply();
-                } else {
-                    editor.clear();
-                    editor.apply();
-                }
-
-                // Intent i = new Intent(Login.this, Home.class);
-                // startActivity(i);
-                // finish();
-            } else {
-                Toast.makeText(this, "Invalid Credentials", Toast.LENGTH_SHORT).show();
-            }
         });
-        forgotpass.setOnClickListener( v->
-        {
+
+        forgotpass.setOnClickListener(v -> {
             Intent i = new Intent(Login.this, ForgetPasswordActivity.class);
+            startActivity(i);
         });
+    }
+
+    private void fixAdminUser() {
+        Database db = new Database(Login.this);
+        db.open();
+
+        Person adminPerson = db.login("admin@test.com", "admin12345");
+        if (adminPerson != null) {
+            adminPerson.setRole("admin");
+            db.update(adminPerson);
+        } else {
+            Person admin = new Person("Admin", "admin@test.com", "admin12345");
+            admin.setRole("admin");
+            db.insertPerson(admin);
+        }
+        db.close();
+    }
+    private void checkAdminAndRedirect(String email) {
+        Database db = new Database(Login.this);
+        db.open();
+
+        boolean isAdmin = db.isAdmin(email);
+
+        if (isAdmin) {
+            startActivity(new Intent(Login.this, AdminDashboardActivity.class));
+        } else {
+            startActivity(new Intent(Login.this, HomeActivity.class));
+        }
+
+        db.close();
+        finish();
     }
 }

@@ -9,7 +9,8 @@ public class Booking {
     private String hotelName;
     private String roomNumber;
     private String roomType;
-    private double price;
+    private String personName;
+    private String personEmail;
 
     public Booking() {}
 
@@ -20,6 +21,7 @@ public class Booking {
         this.roomId = roomId;
     }
 
+    // Getters and Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -43,6 +45,10 @@ public class Booking {
 
     public String getRoomType() { return roomType; }
     public void setRoomType(String roomType) { this.roomType = roomType; }
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
+
+    public String getPersonName() { return personName; }
+    public void setPersonName(String personName) { this.personName = personName; }
+
+    public String getPersonEmail() { return personEmail; }
+    public void setPersonEmail(String personEmail) { this.personEmail = personEmail; }
 }

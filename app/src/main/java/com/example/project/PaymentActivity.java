@@ -1,5 +1,6 @@
 package com.example.project;
 
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
@@ -8,6 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class PaymentActivity extends AppCompatActivity {
 
@@ -19,11 +23,10 @@ public class PaymentActivity extends AppCompatActivity {
     private SavedDatabase savedDb;
     private boolean isSaved = false;
 
-    // Store hotel data
     private String hotelName;
     private String hotelLocation;
     private int hotelId;
-    private int personId = 1; // Default or get from login
+    private int personId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +40,13 @@ public class PaymentActivity extends AppCompatActivity {
         btnConfirmPay = findViewById(R.id.btnConfirmPay);
         heartButton = findViewById(R.id.heartButton);
 
-        // Initialize databases
         db = new Database(this);
         db.open();
         savedDb = new SavedDatabase(this);
         savedDb.open();
 
-        // Get data from Intent
+        getCurrentUserId();
+
         hotelName = getIntent().getStringExtra("hotelName");
         hotelLocation = getIntent().getStringExtra("hotelLocation");
         hotelId = getIntent().getIntExtra("hotelId", -1);
@@ -62,27 +65,24 @@ public class PaymentActivity extends AppCompatActivity {
         tvPayGuests.setText(guestsText);
 
         // Check if hotel is already saved
-        if (hotelId != -1) {
+        if (hotelId != -1 && personId != -1) {
             isSaved = savedDb.isHotelSaved(personId, hotelId);
             updateHeartIcon();
         }
 
-        // Heart button click
         heartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (hotelId == -1) {
-                    Toast.makeText(PaymentActivity.this, "Hotel not found", Toast.LENGTH_SHORT).show();
+                if (hotelId == -1 || personId == -1) {
+                    Toast.makeText(PaymentActivity.this, "Error: User or hotel not found", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (isSaved) {
-                    // Remove from saved
                     savedDb.removeSavedHotel(personId, hotelId);
                     isSaved = false;
                     Toast.makeText(PaymentActivity.this, "Removed from saved", Toast.LENGTH_SHORT).show();
                 } else {
-                    // Add to saved
                     savedDb.saveHotel(personId, hotelId);
                     isSaved = true;
                     Toast.makeText(PaymentActivity.this, "Hotel saved!", Toast.LENGTH_SHORT).show();
@@ -95,7 +95,12 @@ public class PaymentActivity extends AppCompatActivity {
         btnConfirmPay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create booking in database
+                if (personId == -1) {
+                    Toast.makeText(PaymentActivity.this, "User not identified. Please login again.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // created booking with actual person ID
                 Booking booking = new Booking(checkIn, checkOut, personId, 1); // Room ID 1 as default
                 long bookingId = db.insertBooking(booking);
 
@@ -107,6 +112,47 @@ public class PaymentActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void getCurrentUserId() {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            String email = firebaseUser.getEmail();
+            Person person = db.login(email, "");
+            if (person == null) {
+                java.util.ArrayList<Person> allPersons = db.getAllPersons();
+                for (Person p : allPersons) {
+                    if (p.getEmail() != null && p.getEmail().equals(email)) {
+                        person = p;
+                        break;
+                    }
+                }
+            }
+
+            if (person != null) {
+                personId = person.getId();
+            } else {
+                Person newPerson = new Person(
+                        firebaseUser.getDisplayName() != null ? firebaseUser.getDisplayName() : email.split("@")[0],
+                        email,
+                        ""
+                );
+                newPerson.setRole("user");
+                long newId = db.insertPerson(newPerson);
+                personId = (int) newId;
+            }
+        } else {
+            SharedPreferences sp = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+            String savedEmail = sp.getString("email", null);
+            if (savedEmail != null) {
+                Person person = db.login(savedEmail, "");
+                if (person != null) {
+                    personId = person.getId();
+                }
+            }
+        }
+
+        Toast.makeText(this, "Logged in as Person ID: " + personId, Toast.LENGTH_SHORT).show();
     }
 
     private void updateHeartIcon() {

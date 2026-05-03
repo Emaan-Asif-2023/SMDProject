@@ -12,6 +12,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Project">
         <activity
+            android:name=".AdminHotelsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminBookingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminUsersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false" />
+        <activity
             android:name=".BookingDetailsActivity"
             android:exported="false" />
         <activity
