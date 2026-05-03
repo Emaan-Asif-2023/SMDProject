@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Project">
         <activity
+            android:name=".RoomsListActivity"
+            android:exported="false" />
+        <activity
             android:name=".AdminHotelsActivity"
             android:exported="false" />
         <activity

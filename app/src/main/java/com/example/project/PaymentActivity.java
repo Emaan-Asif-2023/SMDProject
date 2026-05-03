@@ -1,172 +1,115 @@
 package com.example.project;
 
-import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class PaymentActivity extends AppCompatActivity {
 
-    private TextView tvPayHotelName, tvPayHotelLocation, tvPayDates, tvPayGuests;
+    private TextView tvPayHotelName, tvPayRoomInfo, tvPayDates, tvPayGuests;
+    private TextView tvLabelRoomPrice, tvValueRoomPrice, tvValueDays, tvValueAdults, tvValueChildren, tvTotalPrice;
     private Button btnConfirmPay;
-    private ImageView heartButton;
-
     private Database db;
-    private SavedDatabase savedDb;
-    private boolean isSaved = false;
-
-    private String hotelName;
-    private String hotelLocation;
-    private int hotelId;
-    private int personId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payment);
 
+        // Initialize Views
         tvPayHotelName = findViewById(R.id.tvPayHotelName);
-        tvPayHotelLocation = findViewById(R.id.tvPayHotelLocation);
+        tvPayRoomInfo = findViewById(R.id.tvPayRoomInfo);
         tvPayDates = findViewById(R.id.tvPayDates);
         tvPayGuests = findViewById(R.id.tvPayGuests);
+        tvValueRoomPrice = findViewById(R.id.tvValueRoomPrice);
+        tvValueDays = findViewById(R.id.tvValueDays);
+        tvValueAdults = findViewById(R.id.tvValueAdults);
+        tvValueChildren = findViewById(R.id.tvValueChildren);
+        tvTotalPrice = findViewById(R.id.tvTotalPrice);
         btnConfirmPay = findViewById(R.id.btnConfirmPay);
-        heartButton = findViewById(R.id.heartButton);
 
         db = new Database(this);
         db.open();
-        savedDb = new SavedDatabase(this);
-        savedDb.open();
 
-        getCurrentUserId();
+        // 1. Get all data passed from RoomListActivity
+        String hotelName = getIntent().getStringExtra("hotelName");
+        String roomNumber = getIntent().getStringExtra("roomNumber");
+        String roomType = getIntent().getStringExtra("roomType");
+        double roomPrice = getIntent().getDoubleExtra("roomPrice", 0.0);
+        int roomId = getIntent().getIntExtra("roomId", -1);
 
-        hotelName = getIntent().getStringExtra("hotelName");
-        hotelLocation = getIntent().getStringExtra("hotelLocation");
-        hotelId = getIntent().getIntExtra("hotelId", -1);
         String checkIn = getIntent().getStringExtra("checkInDate");
         String checkOut = getIntent().getStringExtra("checkOutDate");
         int adults = getIntent().getIntExtra("adults", 1);
         int children = getIntent().getIntExtra("children", 0);
 
-        // Display data
+        // 2. Display Static Info
         tvPayHotelName.setText(hotelName);
-        tvPayHotelLocation.setText(hotelLocation);
+        tvPayRoomInfo.setText("Room " + roomNumber + " - " + roomType);
         tvPayDates.setText("Check-in: " + checkIn + "\nCheck-out: " + checkOut);
 
-        String guestsText = "Guests: " + adults + " Adults";
+        String guestsText = adults + " Adults";
         if (children > 0) guestsText += ", " + children + " Children";
-        tvPayGuests.setText(guestsText);
+        tvPayGuests.setText("Guests: " + guestsText);
 
-        // Check if hotel is already saved
-        if (hotelId != -1 && personId != -1) {
-            isSaved = savedDb.isHotelSaved(personId, hotelId);
-            updateHeartIcon();
-        }
+        // 3. Calculate Backend Logic
+        int numOfDays = calculateDays(checkIn, checkOut);
 
-        heartButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (hotelId == -1 || personId == -1) {
-                    Toast.makeText(PaymentActivity.this, "Error: User or hotel not found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+        // Kids stay at half price for this calculation
+        double adultCostPerDay = adults * roomPrice;
+        double childCostPerDay = children * (roomPrice * 0.5);
+        double totalCostPerDay = adultCostPerDay + childCostPerDay;
+        double grandTotal = totalCostPerDay * numOfDays;
 
-                if (isSaved) {
-                    savedDb.removeSavedHotel(personId, hotelId);
-                    isSaved = false;
-                    Toast.makeText(PaymentActivity.this, "Removed from saved", Toast.LENGTH_SHORT).show();
+
+        tvValueRoomPrice.setText("$" + String.format("%.2f", roomPrice));
+        tvValueDays.setText(String.valueOf(numOfDays));
+        tvValueAdults.setText(String.valueOf(adults));
+        tvValueChildren.setText(String.valueOf(children));
+        tvTotalPrice.setText("$" + String.format("%.2f", grandTotal));
+
+
+        btnConfirmPay.setOnClickListener(v -> {
+
+            int currentUserId = 1;
+
+            if (roomId != -1) {
+                Booking newBooking = new Booking(checkIn, checkOut, currentUserId, roomId);
+                long id = db.insertBooking(newBooking);
+
+                if (id > 0) {
+                    Toast.makeText(this, "Payment Success! Booking ID: " + id, Toast.LENGTH_LONG).show();
+                    finish(); // Go back to Room List
                 } else {
-                    savedDb.saveHotel(personId, hotelId);
-                    isSaved = true;
-                    Toast.makeText(PaymentActivity.this, "Hotel saved!", Toast.LENGTH_SHORT).show();
-                }
-                updateHeartIcon();
-            }
-        });
-
-        // Handle Pay Button Click
-        btnConfirmPay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (personId == -1) {
-                    Toast.makeText(PaymentActivity.this, "User not identified. Please login again.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // created booking with actual person ID
-                Booking booking = new Booking(checkIn, checkOut, personId, 1); // Room ID 1 as default
-                long bookingId = db.insertBooking(booking);
-
-                if (bookingId != -1) {
-                    Toast.makeText(PaymentActivity.this, "Payment Successful! Booking confirmed.", Toast.LENGTH_LONG).show();
-                    finish();
-                } else {
-                    Toast.makeText(PaymentActivity.this, "Booking failed. Please try again.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Booking failed in database.", Toast.LENGTH_SHORT).show();
                 }
             }
+            db.close();
         });
     }
 
-    private void getCurrentUserId() {
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (firebaseUser != null) {
-            String email = firebaseUser.getEmail();
-            Person person = db.login(email, "");
-            if (person == null) {
-                java.util.ArrayList<Person> allPersons = db.getAllPersons();
-                for (Person p : allPersons) {
-                    if (p.getEmail() != null && p.getEmail().equals(email)) {
-                        person = p;
-                        break;
-                    }
-                }
-            }
+    // Helper method to calculate difference in days between two "yyyy-MM-dd" strings
+    private int calculateDays(String checkIn, String checkOut) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        try {
+            Date dateIn = sdf.parse(checkIn);
+            Date dateOut = sdf.parse(checkOut);
 
-            if (person != null) {
-                personId = person.getId();
-            } else {
-                Person newPerson = new Person(
-                        firebaseUser.getDisplayName() != null ? firebaseUser.getDisplayName() : email.split("@")[0],
-                        email,
-                        ""
-                );
-                newPerson.setRole("user");
-                long newId = db.insertPerson(newPerson);
-                personId = (int) newId;
+            if (dateIn != null && dateOut != null) {
+                long diffInMillis = dateOut.getTime() - dateIn.getTime();
+                int days = (int) (diffInMillis / (1000 * 60 * 60 * 24));
+                return Math.max(days, 1); // Ensure at least 1 day charge
             }
-        } else {
-            SharedPreferences sp = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
-            String savedEmail = sp.getString("email", null);
-            if (savedEmail != null) {
-                Person person = db.login(savedEmail, "");
-                if (person != null) {
-                    personId = person.getId();
-                }
-            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
-
-        Toast.makeText(this, "Logged in as Person ID: " + personId, Toast.LENGTH_SHORT).show();
-    }
-
-    private void updateHeartIcon() {
-        if (isSaved) {
-            heartButton.setImageResource(R.drawable.ic_heart_filled);
-        } else {
-            heartButton.setImageResource(R.drawable.ic_heart_empty);
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (db != null) db.close();
-        if (savedDb != null) savedDb.close();
+        return 1; // Fallback to 1 day if parsing fails
     }
 }

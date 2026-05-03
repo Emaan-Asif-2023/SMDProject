@@ -29,21 +29,22 @@ public class HotelListActivity extends AppCompatActivity {
         recyclerViewHotels.setAdapter(hotelAdapter);
 
         String searchedLocation = getIntent().getStringExtra("location");
+        if (searchedLocation != null) {
+            searchedLocation = searchedLocation.trim();
+        }
 
         if (searchedLocation != null && !searchedLocation.isEmpty()) {
             fetchHotels(searchedLocation);
         }
 
-        // UPDATED: When hotel is picked, go to Payment Activity
+        // FIXED: Go to Room List Activity
         hotelAdapter.setOnItemClickListener((position, hotel) -> {
-            Intent intent = new Intent(HotelListActivity.this, PaymentActivity.class);
+            Intent intent = new Intent(HotelListActivity.this, RoomsListActivity.class);
 
-            // Send Hotel Details
             intent.putExtra("hotelId", hotel.getId());
             intent.putExtra("hotelName", hotel.getName());
-            intent.putExtra("hotelLocation", hotel.getLocation());
 
-            // Forward the Search Dates and Guests to Payment screen
+            // Forward Search Dates and Guests
             intent.putExtra("checkInDate", getIntent().getStringExtra("checkInDate"));
             intent.putExtra("checkOutDate", getIntent().getStringExtra("checkOutDate"));
             intent.putExtra("adults", getIntent().getIntExtra("adults", 1));

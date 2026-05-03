@@ -460,33 +460,79 @@ public class Database {
             helper.close();
         }
     }
-
-    // ==========================================
-    // TEST DATA
-    // ==========================================
     public void insertTestData() {
         Person admin = new Person("Admin", "admin@test.com", "admin12345");
         admin.setRole("admin");
         insertPerson(admin);
 
         insertPerson(new Person("John Doe", "john@test.com", "12345678"));
-        insertPerson(new Person("Jane Smith", "jane@test.com", "password"));
+        insertPerson(new Person("Jane Smith", "jane@test.com", "password123"));
 
-        insertHotel(new Hotel("Grand Plaza", "New York", "A luxury 5-star experience in the city center.", R.drawable.hotel1));
-        insertHotel(new Hotel("Sunset Resort", "Los Angeles", "Beautiful beachfront property with ocean views.", R.drawable.hotel2));
-        insertHotel(new Hotel("Mountain View Inn", "Denver", "Cozy rooms located near the Rocky Mountains.", R.drawable.hotel3));
+        insertHotel(new Hotel("Grand Plaza", "New York", "A luxury 5-star experience in the city center.", android.R.drawable.ic_menu_gallery));
+        insertHotel(new Hotel("The Central Inn", "New York", "Affordable comfort near Times Square.", android.R.drawable.ic_menu_camera));
 
-        insertRoom(new Room("101", "Single", 99.99, 1));
-        insertRoom(new Room("102", "Double", 149.99, 1));
-        insertRoom(new Room("201", "Suite", 299.99, 2));
-        insertRoom(new Room("301", "Double", 119.99, 3));
+        insertHotel(new Hotel("Sunset Resort", "Los Angeles", "Beautiful beachfront property with ocean views.", android.R.drawable.ic_menu_mapmode));
+        insertHotel(new Hotel("LAX Airport Hotel", "Los Angeles", "Convenient stay right next to the airport.", android.R.drawable.ic_menu_gallery));
 
-        insertBooking(new Booking("2023-12-01", "2023-12-05", 2, 1));
+        insertHotel(new Hotel("Ocean Breeze Resort", "Miami", "Stunning Art Deco hotel on South Beach.", android.R.drawable.ic_menu_camera));
+        insertHotel(new Hotel("Downtown Miami Hub", "Miami", "Modern rooms in the heart of the financial district.", android.R.drawable.ic_menu_mapmode));
+
+        insertHotel(new Hotel("The Windy Tower", "Chicago", "Luxury suites overlooking Lake Michigan.", android.R.drawable.ic_menu_gallery));
+        insertHotel(new Hotel("Bean City Lodge", "Chicago", "Cozy boutique hotel near Millennium Park.", android.R.drawable.ic_menu_camera));
+
+        insertHotel(new Hotel("Mountain View Inn", "Denver", "Cozy rooms located near the Rocky Mountains.", android.R.drawable.ic_menu_mapmode));
+        insertHotel(new Hotel("Mile High Suites", "Denver", "Spacious suites perfect for families.", android.R.drawable.ic_menu_gallery));
+
+
+        insertRoom(new Room("101", "Single", 120.00, 1));
+        insertRoom(new Room("102", "Double", 180.00, 1));
+        insertRoom(new Room("103", "Suite", 350.00, 1));
+
+        insertRoom(new Room("201", "Single", 89.99, 2));
+        insertRoom(new Room("202", "Double", 129.99, 2));
+        insertRoom(new Room("203", "Double", 129.99, 2));
+
+        insertRoom(new Room("101", "Ocean View Single", 150.00, 3));
+        insertRoom(new Room("102", "Ocean View Double", 220.00, 3));
+        insertRoom(new Room("103", "Presidential Suite", 500.00, 3));
+
+        insertRoom(new Room("101", "Standard", 75.00, 4));
+        insertRoom(new Room("102", "Standard", 75.00, 4));
+        insertRoom(new Room("103", "Deluxe", 110.00, 4));
+
+        insertRoom(new Room("501", "King Room", 200.00, 5));
+        insertRoom(new Room("502", "Twin Room", 200.00, 5));
+        insertRoom(new Room("503", "Penthouse", 800.00, 5));
+
+
+        insertRoom(new Room("301", "Single", 95.00, 6));
+        insertRoom(new Room("302", "Double", 140.00, 6));
+
+
+        insertRoom(new Room("801", "City View Double", 190.00, 7));
+        insertRoom(new Room("802", "Lake View Suite", 450.00, 7));
+        insertRoom(new Room("803", "Lake View Suite", 450.00, 7));
+
+
+        insertRoom(new Room("101", "Queen Room", 130.00, 8));
+        insertRoom(new Room("102", "King Room", 160.00, 8));
+
+
+        insertRoom(new Room("101", "Single", 99.99, 9));
+        insertRoom(new Room("102", "Double", 149.99, 9));
+
+
+        insertRoom(new Room("401", "Family Room", 180.00, 10));
+        insertRoom(new Room("402", "Executive Suite", 300.00, 10));
+        insertRoom(new Room("403", "Family Room", 180.00, 10));
+        insertRoom(new Room("404", "Executive Suite", 300.00, 10));
+
+
+
+        insertBooking(new Booking("2023-12-01", "2023-12-05", 2, 1)); // Jane Smith in Grand Plaza
+        insertBooking(new Booking("2023-11-20", "2023-11-22", 1, 5)); // John Doe in Ocean Breeze
     }
 
-    // ==========================================
-    // DATABASE HELPER
-    // ==========================================
     private class DBHelper extends SQLiteOpenHelper {
         public DBHelper(@Nullable Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
