@@ -154,22 +154,7 @@ public class SettingsFragment extends Fragment {
         builder.show();
     }
 
-    private void showLanguageDialog() {
-        final String[] languages = {"English", "Spanish", "French", "German", "Chinese", "Arabic"};
-        int selectedLanguage = sp.getInt("selectedLanguage", 0);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Select Language");
-        builder.setSingleChoiceItems(languages, selectedLanguage, (dialog, which) -> {
-            editor.putInt("selectedLanguage", which);
-            editor.putString("language", languages[which]);
-            editor.apply();
-            Toast.makeText(getContext(), "Language changed to " + languages[which], Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
 
     private void showCurrencyDialog() {
         final String[] currencies = {"USD ($)", "EUR (€)", "GBP (£)", "PKR (₨)", "INR (₹)", "AED (د.إ)"};
@@ -259,5 +244,36 @@ public class SettingsFragment extends Fragment {
         if (getActivity() != null) {
             getActivity().finish();
         }
+    }
+
+    private void showLanguageDialog() {
+        final String[] languages = {"English", "Spanish", "French", "German", "Chinese", "Arabic"};
+
+        final String[] languageCodes = {"en", "es", "fr", "de", "zh", "ar"};
+
+        // Find out which language is currently selected
+        String currentCode = sp.getString("language_code", "en");
+        int selectedLanguage = 0;
+        for (int i = 0; i < languageCodes.length; i++) {
+            if (languageCodes[i].equalsIgnoreCase(currentCode)) {
+                selectedLanguage = i;
+                break;
+            }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Select Language");
+        builder.setSingleChoiceItems(languages, selectedLanguage, (dialog, which) -> {
+
+            LocaleHelper.setLocale(requireContext(), languageCodes[which]);
+
+            if (getActivity() != null) {
+                getActivity().recreate();
+            }
+
+            dialog.dismiss();
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
     }
 }

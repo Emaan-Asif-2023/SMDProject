@@ -10,7 +10,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Profile Section -->
+
         <LinearLayout
             android:id="@+id/layoutProfile"
             android:layout_width="match_parent"

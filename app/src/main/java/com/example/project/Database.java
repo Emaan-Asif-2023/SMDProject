@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class Database {
 
     static final String DATABASE_NAME = "HotelDB";
-    static final int DATABASE_VERSION = 5;
+    static final int DATABASE_VERSION = 6;
 
     static final String TABLE_PERSON = "persons";
     static final String COLUMN_ID = "person_id";
@@ -54,9 +54,6 @@ public class Database {
         helper = new DBHelper(context);
     }
 
-    // ==========================================
-    // PERSON METHODS
-    // ==========================================
     public long insertPerson(Person person) {
         SQLiteDatabase db = helper.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -195,9 +192,6 @@ public class Database {
         return rows > 0;
     }
 
-    // ==========================================
-    // HOTEL METHODS
-    // ==========================================
     public long insertHotel(Hotel hotel) {
         SQLiteDatabase db = helper.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -279,14 +273,11 @@ public class Database {
         cv.put(COL_HOTEL_NAME, hotel.getName());
         cv.put(COL_HOTEL_LOCATION, hotel.getLocation());
         cv.put(COL_HOTEL_DESC, hotel.getDescription());
+        cv.put(COL_HOTEL_IMAGE, hotel.getImageResId());
         int rows = db.update(TABLE_HOTEL, cv, COL_HOTEL_ID + "=?", new String[]{String.valueOf(hotel.getId())});
         db.close();
         return rows;
     }
-
-    // ==========================================
-    // ROOM METHODS
-    // ==========================================
     public long insertRoom(Room room) {
         SQLiteDatabase db = helper.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -332,9 +323,6 @@ public class Database {
         return count;
     }
 
-    // ==========================================
-    // BOOKING METHODS
-    // ==========================================
     public long insertBooking(Booking booking) {
         SQLiteDatabase db = helper.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -503,16 +491,16 @@ public class Database {
         cv.put(COLUMN_ROLE, "user");
         db.insert(TABLE_PERSON, null, cv);
 
-        long hotelId1 = insertHotelDirect(db, "Grand Plaza", "New York", "A luxury 5-star experience in the city center.", android.R.drawable.ic_menu_gallery);
-        long hotelId2 = insertHotelDirect(db, "The Central Inn", "New York", "Affordable comfort near Times Square.", android.R.drawable.ic_menu_camera);
-        long hotelId3 = insertHotelDirect(db, "Sunset Resort", "Los Angeles", "Beautiful beachfront property with ocean views.", android.R.drawable.ic_menu_mapmode);
-        long hotelId4 = insertHotelDirect(db, "LAX Airport Hotel", "Los Angeles", "Convenient stay right next to the airport.", android.R.drawable.ic_menu_gallery);
-        long hotelId5 = insertHotelDirect(db, "Ocean Breeze Resort", "Miami", "Stunning Art Deco hotel on South Beach.", android.R.drawable.ic_menu_camera);
-        long hotelId6 = insertHotelDirect(db, "Downtown Miami Hub", "Miami", "Modern rooms in the heart of the financial district.", android.R.drawable.ic_menu_mapmode);
-        long hotelId7 = insertHotelDirect(db, "The Windy Tower", "Chicago", "Luxury suites overlooking Lake Michigan.", android.R.drawable.ic_menu_gallery);
-        long hotelId8 = insertHotelDirect(db, "Bean City Lodge", "Chicago", "Cozy boutique hotel near Millennium Park.", android.R.drawable.ic_menu_camera);
-        long hotelId9 = insertHotelDirect(db, "Mountain View Inn", "Denver", "Cozy rooms located near the Rocky Mountains.", android.R.drawable.ic_menu_mapmode);
-        long hotelId10 = insertHotelDirect(db, "Mile High Suites", "Denver", "Spacious suites perfect for families.", android.R.drawable.ic_menu_gallery);
+        long hotelId1 = insertHotelDirect(db, "Grand Plaza", "New York", "A luxury 5-star experience in the city center.", R.drawable.hotel1);
+        long hotelId2 = insertHotelDirect(db, "The Central Inn", "New York", "Affordable comfort near Times Square.", R.drawable.hotel2);
+        long hotelId3 = insertHotelDirect(db, "Sunset Resort", "Los Angeles", "Beautiful beachfront property with ocean views.", R.drawable.hotel3);
+        long hotelId4 = insertHotelDirect(db, "LAX Airport Hotel", "Los Angeles", "Convenient stay right next to the airport.", R.drawable.hotel4);
+        long hotelId5 = insertHotelDirect(db, "Ocean Breeze Resort", "Miami", "Stunning Art Deco hotel on South Beach.", R.drawable.hotel5);
+        long hotelId6 = insertHotelDirect(db, "Downtown Miami Hub", "Miami", "Modern rooms in the heart of the financial district.", R.drawable.hotel6);
+        long hotelId7 = insertHotelDirect(db, "The Windy Tower", "Chicago", "Luxury suites overlooking Lake Michigan.", R.drawable.hotel7);
+        long hotelId8 = insertHotelDirect(db, "Bean City Lodge", "Chicago", "Cozy boutique hotel near Millennium Park.", R.drawable.hotel8);
+        long hotelId9 = insertHotelDirect(db, "Mountain View Inn", "Denver", "Cozy rooms located near the Rocky Mountains.", R.drawable.hotel9);
+        long hotelId10 = insertHotelDirect(db, "Mile High Suites", "Denver", "Spacious suites perfect for families.", R.drawable.hotel10);
 
         insertRoomDirect(db, "101", "Single", 120.00, (int) hotelId1);
         insertRoomDirect(db, "102", "Double", 180.00, (int) hotelId1);
