@@ -3,9 +3,10 @@ package com.example.project;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,7 +18,7 @@ public class AdminBookingsActivity extends AppCompatActivity {
 
     private Database db;
     private ListView listViewBookings;
-    private Button btnBack;
+    private ImageView btnBack;
     private ArrayList<Booking> bookingsList;
     private ArrayList<String> displayList;
     private ArrayAdapter<String> adapter;
@@ -25,7 +26,7 @@ public class AdminBookingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_list);
+        setContentView(R.layout.activity_admin_bookings);
 
         db = new Database(this);
         db.open();
@@ -36,7 +37,16 @@ public class AdminBookingsActivity extends AppCompatActivity {
         titleText.setText("Manage Bookings");
 
         displayList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, displayList);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, displayList) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView textView = view.findViewById(android.R.id.text1);
+                textView.setTextColor(getResources().getColor(android.R.color.black));
+                textView.setPadding(16, 20, 16, 20);
+                return view;
+            }
+        };
         listViewBookings.setAdapter(adapter);
 
         loadAllBookings();
@@ -148,13 +158,11 @@ public class AdminBookingsActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // Validate dates
                     if (checkOut.compareTo(checkIn) <= 0) {
                         Toast.makeText(this, "Check-out must be after check-in", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    // Update booking dates
                     booking.setCheckIn(checkIn);
                     booking.setCheckOut(checkOut);
 

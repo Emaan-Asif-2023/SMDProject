@@ -588,17 +588,11 @@ public class Database {
 
         @Override
         public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-            if (oldVersion < 5) {
-                try {
-                    sqLiteDatabase.execSQL("ALTER TABLE " + TABLE_PERSON + " ADD COLUMN " + COLUMN_ROLE + " TEXT DEFAULT 'user'");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                ContentValues cv = new ContentValues();
-                cv.put(COLUMN_ROLE, "admin");
-                sqLiteDatabase.update(TABLE_PERSON, cv, COLUMN_EMAIL + "=?", new String[]{"admin@test.com"});
-            }
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_BOOKING);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_ROOM);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_HOTEL);
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_PERSON);
+            onCreate(sqLiteDatabase);
         }
     }
 }

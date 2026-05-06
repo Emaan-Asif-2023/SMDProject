@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:elevation="4dp">
+    android:layout_margin="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="#FFFFFF"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,33 +20,33 @@
         <ImageView
             android:id="@+id/imageHotel"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="160dp"
             android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"/>
+            android:src="@drawable/hotel_placeholder" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="16dp">
 
             <TextView
                 android:id="@+id/textHotelName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Hotel Name"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#003580"/>
+                android:textColor="#1A1A1A" />
 
             <TextView
                 android:id="@+id/textHotelLocation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Location"
-                android:textSize="12sp"
-                android:textColor="#666666"
-                android:layout_marginTop="4dp"/>
+                android:textSize="13sp"
+                android:textColor="#999999"
+                android:layout_marginTop="6dp" />
 
         </LinearLayout>
 

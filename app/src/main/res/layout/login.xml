@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/lightGray">
+    android:background="#F5F7FA">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,78 +12,138 @@
         android:padding="24dp"
         android:gravity="center_horizontal">
 
+        <LinearLayout
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/profile_gradient_bg"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"
+            android:layout_marginTop="40dp">
 
-        <ImageView
-            android:id="@+id/ivLogo"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/proj_logo"
-            android:layout_marginBottom="16dp"/>
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_hotel"
+                app:tint="#FFFFFF" />
 
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvwelcome"
             android:text="Welcome Back"
-            android:textSize="24sp"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="@color/darkBlue"
-            android:layout_marginBottom="24dp"
+            android:textColor="#1A1A1A"
+            android:layout_marginBottom="8dp"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"/>
-
-
-        <EditText
-            android:id="@+id/etmail"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:hint="Email"
-            android:padding="12dp"
-            android:background="@drawable/edittext"
-            android:layout_marginBottom="12dp"/>
-
-
-        <EditText
-            android:id="@+id/etpassword"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:hint="Password"
-            android:inputType="textPassword"
-            android:padding="12dp"
-            android:background="@drawable/edittext"
-            android:layout_marginBottom="8dp"/>
-
 
         <TextView
-            android:id="@+id/tvforgotpass"
-            android:text="Forgot Password?"
-            android:textColor="@color/red"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="20dp"
+            android:text="Sign in to continue"
+            android:textSize="14sp"
+            android:textColor="#999999"
+            android:layout_marginBottom="32dp"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"/>
-        <CheckBox
-            android:id="@+id/cbRemember"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Remember Me"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:layout_gravity="left"
-            android:layout_marginBottom="16dp"/>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Email Address"
+                android:textSize="12sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="4dp"
+                android:layout_marginStart="4dp"/>
+
+            <EditText
+                android:id="@+id/etmail"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Enter your email"
+                android:padding="12dp"
+                android:background="@drawable/edittext_modern"
+                android:layout_marginBottom="16dp"
+                android:textSize="14sp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Password"
+                android:textSize="12sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="4dp"
+                android:layout_marginStart="4dp"/>
+
+            <EditText
+                android:id="@+id/etpassword"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Enter your password"
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:background="@drawable/edittext_modern"
+                android:layout_marginBottom="8dp"
+                android:textSize="14sp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <CheckBox
+                android:id="@+id/cbRemember"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Remember Me"
+                android:textColor="#666666"
+                android:textSize="13sp"
+                android:layout_weight="1"
+                android:buttonTint="#2196F3"/>
+
+            <TextView
+                android:id="@+id/tvforgotpass"
+                android:text="Forgot Password?"
+                android:textColor="#FF5252"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:clickable="true"
+                android:focusable="true"/>
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/btnlogin"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="40dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
             android:text="Login"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/primaryBlue"
-            android:layout_marginBottom="16dp"/>
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/button_search_blue"
+            app:backgroundTint="@null"
+            android:layout_marginBottom="20dp"/>
 
-
-        <!-- Replace the old tvsignup with this block -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -93,7 +154,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Don't have an account? "
-                android:textColor="@color/gray"
+                android:textColor="#666666"
                 android:textSize="14sp"/>
 
             <TextView
@@ -101,7 +162,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sign Up"
-                android:textColor="@color/primaryBlue"
+                android:textColor="#2196F3"
                 android:textStyle="bold"
                 android:textSize="14sp"
                 android:clickable="true"

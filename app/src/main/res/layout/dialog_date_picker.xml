@@ -2,41 +2,61 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:background="@drawable/dialog_background"
-    android:padding="20dp"
-    android:minWidth="300dp">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Date"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#1A1A1A"
-        android:layout_marginBottom="16dp" />
-
-    <CalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="match_parent"
-        android:layout_height="320dp"
-        android:background="@drawable/calendar_background"
-        android:layout_marginBottom="16dp"
-        android:theme="@style/CalendarViewCustom"
-        android:dateTextAppearance="@style/CalendarDateCustom"
-        android:weekDayTextAppearance="@style/CalendarWeekCustom" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#E0E0E0"
-        android:layout_marginBottom="16dp" />
+    android:background="@drawable/dialog_background_modern"
+    android:padding="24dp"
+    android:minWidth="320dp"
+    android:elevation="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="end">
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_calendar_modern"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Select Your Date"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1A1A1A"
+            android:fontFamily="sans-serif-medium" />
+
+    </LinearLayout>
+
+    <CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="match_parent"
+        android:layout_height="360dp"
+        android:background="@drawable/calendar_background_modern"
+        android:layout_marginBottom="20dp"
+        android:theme="@style/CalendarViewModern"
+        android:dateTextAppearance="@style/CalendarDateModern"
+        android:weekDayTextAppearance="@style/CalendarWeekModern"
+        android:weekNumberColor="#999999"
+        android:shownWeekCount="6" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:background="@drawable/gradient_divider"
+        android:layout_marginBottom="20dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
 
         <Button
             android:id="@+id/buttonCancel"
@@ -44,10 +64,11 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:text="Cancel"
-            android:textColor="#6B6B6B"
+            android:textColor="#666666"
             android:textSize="14sp"
-            android:background="@drawable/button_cancel_bg"
-            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_cancel_modern"
+            app:backgroundTint="@null"
+            android:layout_marginEnd="12dp"
             android:textAllCaps="false"
             android:stateListAnimator="@null" />
 
@@ -60,10 +81,12 @@
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:background="@drawable/button_primary_bg"
-            android:layout_marginStart="8dp"
+            android:background="@drawable/button_confirm_modern"
+            app:backgroundTint="@null"
+            android:layout_marginStart="12dp"
             android:textAllCaps="false"
-            android:stateListAnimator="@null" />
+            android:stateListAnimator="@null"
+            android:elevation="2dp" />
 
     </LinearLayout>
 

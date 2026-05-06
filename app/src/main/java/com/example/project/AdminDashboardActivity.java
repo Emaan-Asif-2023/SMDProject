@@ -2,9 +2,12 @@ package com.example.project;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -13,7 +16,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private Database db;
     private TextView welcomeText;
-    private Button btnManageUsers, btnManageBookings, btnManageHotels, btnLogout;
+    private LinearLayout btnManageUsers, btnManageBookings, btnManageHotels, btnLogout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +48,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         });
 
         btnLogout.setOnClickListener(v -> {
-            auth.signOut();
-            startActivity(new Intent(this, Login.class));
-            finish();
+            showLogoutConfirmation();
         });
     }
 
@@ -68,6 +69,43 @@ public class AdminDashboardActivity extends AppCompatActivity {
             }
         }
         return false;
+    }
+
+    private void showLogoutConfirmation() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_logout, null);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+
+        TextView buttonLogout = dialogView.findViewById(R.id.buttonLogout);
+        TextView buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+
+        buttonLogout.setOnClickListener(v -> {
+            dialog.dismiss();
+            performLogout();
+        });
+
+        buttonCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void performLogout() {
+        Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
+
+        // Sign out from Firebase
+        auth.signOut();
+
+        // Navigate to Login page
+        Intent intent = new Intent(this, Login.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+
+        // Finish current activity
+        finish();
     }
 
     @Override

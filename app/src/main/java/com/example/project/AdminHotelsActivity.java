@@ -3,9 +3,11 @@ package com.example.project;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,7 +19,8 @@ public class AdminHotelsActivity extends AppCompatActivity {
 
     private Database db;
     private ListView listViewHotels;
-    private Button btnAddHotel, btnBack;
+    private LinearLayout btnAddHotel;
+    private ImageView btnBack;
     private ArrayList<Hotel> hotelsList;
     private ArrayList<String> displayList;
     private ArrayAdapter<String> adapter;
@@ -37,7 +40,16 @@ public class AdminHotelsActivity extends AppCompatActivity {
         titleText.setText("Manage Hotels");
 
         displayList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, displayList);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, displayList) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView textView = view.findViewById(android.R.id.text1);
+                textView.setTextColor(getResources().getColor(android.R.color.black));
+                textView.setPadding(16, 20, 16, 20);
+                return view;
+            }
+        };
         listViewHotels.setAdapter(adapter);
 
         loadHotels();
@@ -195,10 +207,8 @@ public class AdminHotelsActivity extends AppCompatActivity {
     }
 
     private void showDeleteHotelDialog(Hotel hotel) {
-
         ArrayList<Room> rooms = db.getRoomsByHotel(hotel.getId());
         int roomCount = rooms.size();
-
 
         String warningMessage = "Are you sure you want to delete " + hotel.getName() + "?";
         if (roomCount > 0) {
@@ -210,12 +220,9 @@ public class AdminHotelsActivity extends AppCompatActivity {
                 .setTitle("Delete Hotel")
                 .setMessage(warningMessage)
                 .setPositiveButton("Delete", (dialog, which) -> {
-
                     for (Room room : rooms) {
                         deleteRoomFromDatabase(room.getId());
                     }
-
-
                     int count = db.deleteHotel(hotel.getId());
                     if (count > 0) {
                         Toast.makeText(this, "Hotel deleted successfully", Toast.LENGTH_SHORT).show();

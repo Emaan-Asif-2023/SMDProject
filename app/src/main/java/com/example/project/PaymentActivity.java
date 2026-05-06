@@ -1,11 +1,14 @@
 package com.example.project;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,7 +26,6 @@ public class PaymentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payment);
 
-        // Initialize Views
         tvPayHotelName = findViewById(R.id.tvPayHotelName);
         tvPayRoomInfo = findViewById(R.id.tvPayRoomInfo);
         tvPayDates = findViewById(R.id.tvPayDates);
@@ -38,7 +40,6 @@ public class PaymentActivity extends AppCompatActivity {
         db = new Database(this);
         db.open();
 
-        // 1. Get all data passed from RoomListActivity
         String hotelName = getIntent().getStringExtra("hotelName");
         String roomNumber = getIntent().getStringExtra("roomNumber");
         String roomType = getIntent().getStringExtra("roomType");
@@ -50,7 +51,6 @@ public class PaymentActivity extends AppCompatActivity {
         int adults = getIntent().getIntExtra("adults", 1);
         int children = getIntent().getIntExtra("children", 0);
 
-        // 2. Display Static Info
         tvPayHotelName.setText(hotelName);
         tvPayRoomInfo.setText("Room " + roomNumber + " - " + roomType);
         tvPayDates.setText("Check-in: " + checkIn + "\nCheck-out: " + checkOut);
@@ -59,15 +59,12 @@ public class PaymentActivity extends AppCompatActivity {
         if (children > 0) guestsText += ", " + children + " Children";
         tvPayGuests.setText("Guests: " + guestsText);
 
-        // 3. Calculate Backend Logic
         int numOfDays = calculateDays(checkIn, checkOut);
 
-        // Kids stay at half price for this calculation
         double adultCostPerDay = adults * roomPrice;
         double childCostPerDay = children * (roomPrice * 0.5);
         double totalCostPerDay = adultCostPerDay + childCostPerDay;
         double grandTotal = totalCostPerDay * numOfDays;
-
 
         tvValueRoomPrice.setText("$" + String.format("%.2f", roomPrice));
         tvValueDays.setText(String.valueOf(numOfDays));
@@ -75,27 +72,42 @@ public class PaymentActivity extends AppCompatActivity {
         tvValueChildren.setText(String.valueOf(children));
         tvTotalPrice.setText("$" + String.format("%.2f", grandTotal));
 
-
         btnConfirmPay.setOnClickListener(v -> {
+            // Get the actual logged-in user's ID
+            int currentUserId = getCurrentUserId();
 
-            int currentUserId = 1;
-
-            if (roomId != -1) {
+            if (roomId != -1 && currentUserId != -1) {
                 Booking newBooking = new Booking(checkIn, checkOut, currentUserId, roomId);
                 long id = db.insertBooking(newBooking);
 
                 if (id > 0) {
                     Toast.makeText(this, "Payment Success! Booking ID: " + id, Toast.LENGTH_LONG).show();
-                    finish(); // Go back to Room List
+                    finish();
                 } else {
                     Toast.makeText(this, "Booking failed in database.", Toast.LENGTH_SHORT).show();
                 }
+            } else {
+                Toast.makeText(this, "Error: User not found", Toast.LENGTH_SHORT).show();
             }
             db.close();
         });
     }
 
-    // Helper method to calculate difference in days between two "yyyy-MM-dd" strings
+    private int getCurrentUserId() {
+        // First try Firebase
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            String email = firebaseUser.getEmail();
+            Person person = db.login(email, "");
+            if (person != null) {
+                return person.getId();
+            }
+        }
+
+        SharedPreferences sp = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+        return sp.getInt("personId", -1);
+    }
+
     private int calculateDays(String checkIn, String checkOut) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         try {
@@ -105,11 +117,11 @@ public class PaymentActivity extends AppCompatActivity {
             if (dateIn != null && dateOut != null) {
                 long diffInMillis = dateOut.getTime() - dateIn.getTime();
                 int days = (int) (diffInMillis / (1000 * 60 * 60 * 24));
-                return Math.max(days, 1); // Ensure at least 1 day charge
+                return Math.max(days, 1);
             }
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return 1; // Fallback to 1 day if parsing fails
+        return 1;
     }
 }

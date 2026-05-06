@@ -36,7 +36,6 @@ public class Login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
-        logo = findViewById(R.id.ivLogo);
         welcome = findViewById(R.id.tvwelcome);
         forgotpass = findViewById(R.id.tvforgotpass);
         signup = findViewById(R.id.tvsignup);
@@ -113,17 +112,19 @@ public class Login extends AppCompatActivity {
                                 editor.apply();
                             }
 
+                            Database loginDb = new Database(Login.this);
+                            loginDb.open();
+                            Person person = loginDb.login(e, p);
+                            if (person != null) {
+                                editor.putInt("personId", person.getId());
+                                editor.apply();
+                            }
+                            loginDb.close();
 
                             FirebaseUser firebaseUser = auth.getCurrentUser();
                             syncFirebaseUserToLocalDb(firebaseUser);
 
                             checkAdminAndRedirect(e);
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(Login.this, "Login failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
         });
@@ -148,7 +149,6 @@ public class Login extends AppCompatActivity {
         }
 
         if (!syncDb.isEmailExists(email)) {
-
             Person person = new Person(name, email, "");
             person.setRole("user");
 
@@ -156,7 +156,17 @@ public class Login extends AppCompatActivity {
                 person.setRole("admin");
             }
 
-            syncDb.insertPerson(person);
+            long id = syncDb.insertPerson(person);
+
+            SharedPreferences loginPrefs = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+            loginPrefs.edit().putInt("personId", (int) id).apply();
+
+        } else {
+            Person existingPerson = syncDb.login(email, "");
+            if (existingPerson != null) {
+                SharedPreferences loginPrefs = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+                loginPrefs.edit().putInt("personId", existingPerson.getId()).apply();
+            }
         }
 
         syncDb.close();

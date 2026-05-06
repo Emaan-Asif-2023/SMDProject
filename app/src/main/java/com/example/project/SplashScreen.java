@@ -29,7 +29,6 @@ public class SplashScreen extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        tvName=findViewById(R.id.tvName);
         ivLogo=findViewById(R.id.ivLogo);
         Animation anim = AnimationUtils.loadAnimation(this, R.anim.animation);
         ivLogo.startAnimation(anim);
@@ -38,8 +37,5 @@ public class SplashScreen extends AppCompatActivity {
             startActivity(new Intent(SplashScreen.this, Login.class));
             finish();
         }, 5000);
-
-
-
     }
 }

@@ -3,22 +3,22 @@ package com.example.project;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 
 public class AdminUsersActivity extends AppCompatActivity {
 
     private Database db;
     private ListView listViewUsers;
-    private Button btnBack;
+    private ImageView btnBack;
     private ArrayList<Person> personsList;
     private ArrayAdapter<String> adapter;
     private ArrayList<String> displayList;
@@ -26,7 +26,7 @@ public class AdminUsersActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_list);
+        setContentView(R.layout.activity_admin_users);
 
         db = new Database(this);
         db.open();
@@ -37,7 +37,16 @@ public class AdminUsersActivity extends AppCompatActivity {
         titleText.setText("Manage Users");
 
         displayList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, displayList);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, displayList) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView textView = view.findViewById(android.R.id.text1);
+                textView.setTextColor(getResources().getColor(android.R.color.black));
+                textView.setPadding(16, 20, 16, 20);
+                return view;
+            }
+        };
         listViewUsers.setAdapter(adapter);
 
         loadUsers();
@@ -109,7 +118,6 @@ public class AdminUsersActivity extends AppCompatActivity {
                         return;
                     }
 
-
                     if (!email.equals(person.getEmail()) && db.isEmailExists(email)) {
                         Toast.makeText(this, "Email already exists", Toast.LENGTH_SHORT).show();
                         return;
@@ -141,7 +149,6 @@ public class AdminUsersActivity extends AppCompatActivity {
                 .setSingleChoiceItems(roles, checkedItem, (dialog, which) -> {
                     String newRole = roles[which];
 
-
                     if (person.getEmail().equals("admin@test.com")) {
                         Toast.makeText(this, "Cannot change default admin role", Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
@@ -162,7 +169,6 @@ public class AdminUsersActivity extends AppCompatActivity {
     }
 
     private void showDeleteUserDialog(Person person) {
-
         if (person.getEmail().equals("admin@test.com")) {
             Toast.makeText(this, "Cannot delete default admin account", Toast.LENGTH_SHORT).show();
             return;
@@ -172,7 +178,6 @@ public class AdminUsersActivity extends AppCompatActivity {
                 .setTitle("Delete User")
                 .setMessage("Are you sure you want to delete " + person.getName() + "?\n\nThis action cannot be undone!")
                 .setPositiveButton("Delete", (dialog, which) -> {
-
                     ArrayList<Booking> userBookings = db.getBookingsByUser(person.getId());
                     if (!userBookings.isEmpty()) {
                         new AlertDialog.Builder(this)
@@ -192,13 +197,6 @@ public class AdminUsersActivity extends AppCompatActivity {
     }
 
     private void performDelete(Person person) {
-
-        SavedDatabase savedDb = new SavedDatabase(this);
-        savedDb.open();
-
-        savedDb.close();
-
-
         int count = db.deletePerson(person.getId());
         if (count > 0) {
             Toast.makeText(this, "User deleted successfully", Toast.LENGTH_SHORT).show();

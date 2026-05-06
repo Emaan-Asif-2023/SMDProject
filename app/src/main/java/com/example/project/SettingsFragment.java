@@ -1,5 +1,6 @@
 package com.example.project;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -18,6 +21,15 @@ import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+
+import android.widget.EditText;
+import android.widget.ImageView;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
+
+import java.util.ArrayList;
 
 public class SettingsFragment extends Fragment {
 
@@ -79,6 +91,25 @@ public class SettingsFragment extends Fragment {
             String name = user.getDisplayName();
             String email = user.getEmail();
 
+            if (name == null || name.isEmpty()) {
+                Database db = new Database(requireContext());
+                db.open();
+
+                ArrayList<Person> persons = db.getAllPersons();
+                for (Person p : persons) {
+                    if (p.getEmail() != null && p.getEmail().equals(email)) {
+                        name = p.getName();
+                        break;
+                    }
+                }
+                db.close();
+
+                if (name != null && !name.isEmpty()) {
+                    editor.putString("userName", name);
+                    editor.apply();
+                }
+            }
+
             if (name != null && !name.isEmpty()) {
                 textViewUserName.setText(name);
             } else {
@@ -94,12 +125,10 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        // Profile click
         layoutProfile.setOnClickListener(v -> {
             showEditProfileDialog();
         });
 
-        // Notification toggle
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
             editor.putBoolean("notifications", isChecked);
             editor.apply();
@@ -147,76 +176,249 @@ public class SettingsFragment extends Fragment {
     }
 
     private void showEditProfileDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Edit Profile");
-        builder.setMessage("Profile editing will be available in the next update!");
-        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
-        builder.show();
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_profile, null);
+
+        EditText etName = dialogView.findViewById(R.id.etName);
+        EditText etEmail = dialogView.findViewById(R.id.etEmail);
+        EditText etCurrentPassword = dialogView.findViewById(R.id.etCurrentPassword);
+        EditText etNewPassword = dialogView.findViewById(R.id.etNewPassword);
+        TextView buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+        TextView buttonSave = dialogView.findViewById(R.id.buttonSave);
+        ImageView ivClose = dialogView.findViewById(R.id.ivClose);
+
+        String currentName = textViewUserName.getText().toString();
+        String currentEmail = textViewUserEmail.getText().toString();
+
+        if (!currentName.equals("Guest User")) {
+            etName.setText(currentName);
+        }
+        etEmail.setText(currentEmail);
+        etEmail.setEnabled(false);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+
+        buttonCancel.setOnClickListener(v -> dialog.dismiss());
+        ivClose.setOnClickListener(v -> dialog.dismiss());
+
+        buttonSave.setOnClickListener(v -> {
+            String name = etName.getText().toString().trim();
+            String currentPass = etCurrentPassword.getText().toString().trim();
+            String newPass = etNewPassword.getText().toString().trim();
+
+            if (name.isEmpty()) {
+                Toast.makeText(getContext(), "Name cannot be empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!currentPass.isEmpty() || !newPass.isEmpty()) {
+                if (currentPass.isEmpty()) {
+                    Toast.makeText(getContext(), "Enter current password to change", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (newPass.isEmpty()) {
+                    Toast.makeText(getContext(), "Enter new password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (newPass.length() < 8) {
+                    Toast.makeText(getContext(), "Password must be at least 8 characters", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                updatePassword(currentPass, newPass, dialog);
+            }
+
+            updateProfileName(name, dialog);
+        });
+
+        dialog.show();
     }
 
+    private void updateProfileName(String name, AlertDialog dialog) {
+        if (user != null) {
+            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(name)
+                    .build();
 
+            user.updateProfile(profileUpdates)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+
+                            updateNameInLocalDb(name);
+
+                            editor.putString("userName", name);
+                            editor.apply();
+
+                            textViewUserName.setText(name);
+
+                            Toast.makeText(getContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(getContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            updateNameInLocalDb(name);
+            editor.putString("userName", name);
+            editor.apply();
+            textViewUserName.setText(name);
+            Toast.makeText(getContext(), "Profile updated locally", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        }
+    }
+
+    private void updateNameInLocalDb(String name) {
+        Database db = new Database(requireContext());
+        db.open();
+
+        String email = user != null ? user.getEmail() : textViewUserEmail.getText().toString();
+        Person person = db.login(email, ""); // Get current user
+
+        if (person != null) {
+            person.setName(name);
+            db.update(person);
+        }
+
+        db.close();
+    }
+
+    private void updatePassword(String currentPassword, String newPassword, AlertDialog dialog) {
+        if (user != null) {
+            AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+
+            user.reauthenticate(credential)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            user.updatePassword(newPassword)
+                                    .addOnCompleteListener(passwordTask -> {
+                                        if (passwordTask.isSuccessful()) {
+                                            // Update password in local database
+                                            updatePasswordInLocalDb(newPassword);
+                                            Toast.makeText(getContext(), "Password updated successfully", Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(getContext(), "Failed to update password: " +
+                                                    passwordTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        } else {
+                            Toast.makeText(getContext(), "Current password is incorrect", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+    }
+
+    private void updatePasswordInLocalDb(String newPassword) {
+        Database db = new Database(requireContext());
+        db.open();
+
+        String email = user.getEmail();
+        Person person = db.login(email, "");
+
+        if (person != null) {
+            person.setPassword(newPassword);
+            db.update(person);
+        }
+
+        db.close();
+    }
 
     private void showCurrencyDialog() {
         final String[] currencies = {"USD ($)", "EUR (€)", "GBP (£)", "PKR (₨)", "INR (₹)", "AED (د.إ)"};
         int selectedCurrency = sp.getInt("selectedCurrency", 0);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Select Currency");
-        builder.setSingleChoiceItems(currencies, selectedCurrency, (dialog, which) -> {
-            editor.putInt("selectedCurrency", which);
-            editor.putString("currency", currencies[which]);
-            editor.apply();
-            Toast.makeText(getContext(), "Currency changed to " + currencies[which], Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_currency, null);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        TextView title = dialogView.findViewById(R.id.dialogTitle);
+        title.setText("Select Currency");
+
+        // Create radio group items dynamically
+        LinearLayout radioGroup = dialogView.findViewById(R.id.radioGroup);
+
+        for (int i = 0; i < currencies.length; i++) {
+            View radioItem = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_radio_item, null);
+            TextView radioText = radioItem.findViewById(R.id.radioText);
+            View radioCircle = radioItem.findViewById(R.id.radioCircle);
+
+            radioText.setText(currencies[i]);
+
+            final int index = i;
+            if (selectedCurrency == i) {
+                radioCircle.setBackgroundResource(R.drawable.radio_selected);
+            }
+
+            radioItem.setOnClickListener(v -> {
+                editor.putInt("selectedCurrency", index);
+                editor.putString("currency", currencies[index]);
+                editor.apply();
+                Toast.makeText(getContext(), "Currency changed to " + currencies[index], Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            });
+
+            radioGroup.addView(radioItem);
+        }
+
+        TextView buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+        buttonCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void showPrivacyPolicy() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Privacy Policy");
-        builder.setMessage("We value your privacy. Your personal information is protected and will never be shared with third parties without your consent.\n\n" +
-                "• We collect only necessary booking information\n" +
-                "• Your payment details are encrypted\n" +
-                "• You can delete your account anytime\n" +
-                "• We don't share your data with advertisers");
-        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
-        builder.show();
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_privacy, null);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        @SuppressLint({"MissingInflatedId", "LocalSuppress"}) TextView buttonOk = dialogView.findViewById(R.id.buttonOk);
+        buttonOk.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void showAboutDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("About Hotel Booking App");
-        builder.setMessage("Version: 1.0.0\n\n" +
-                "Find and book the perfect hotel for your stay.\n\n" +
-                "Features:\n" +
-                "• Search thousands of hotels\n" +
-                "• Easy booking process\n" +
-                "• Save your favorites\n" +
-                "• Secure payments\n\n" +
-                "© 2025 Hotel Booking App. All rights reserved.");
-        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
-        builder.show();
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_about, null);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        @SuppressLint({"MissingInflatedId", "LocalSuppress"}) TextView buttonOk = dialogView.findViewById(R.id.buttonOk);
+        buttonOk.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void showLogoutConfirmation() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Logout");
-        builder.setMessage("Are you sure you want to logout?");
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_logout, null);
 
-        builder.setPositiveButton("Logout", (dialog, which) -> {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+
+        TextView buttonLogout = dialogView.findViewById(R.id.buttonLogout);
+        TextView buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+
+        buttonLogout.setOnClickListener(v -> {
+            dialog.dismiss();
             performLogout();
         });
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        buttonCancel.setOnClickListener(v -> dialog.dismiss());
 
-        AlertDialog dialog = builder.create();
         dialog.show();
-
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(
-                requireContext().getResources().getColor(android.R.color.holo_red_dark));
     }
 
     private void performLogout() {
@@ -248,7 +450,6 @@ public class SettingsFragment extends Fragment {
 
     private void showLanguageDialog() {
         final String[] languages = {"English", "Spanish", "French", "German", "Chinese", "Arabic"};
-
         final String[] languageCodes = {"en", "es", "fr", "de", "zh", "ar"};
 
         // Find out which language is currently selected
@@ -261,19 +462,45 @@ public class SettingsFragment extends Fragment {
             }
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Select Language");
-        builder.setSingleChoiceItems(languages, selectedLanguage, (dialog, which) -> {
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_language, null);
 
-            LocaleHelper.setLocale(requireContext(), languageCodes[which]);
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog);
+        builder.setView(dialogView);
 
-            if (getActivity() != null) {
-                getActivity().recreate();
+        AlertDialog dialog = builder.create();
+
+        TextView title = dialogView.findViewById(R.id.dialogTitle);
+        title.setText("Select Language");
+
+        // Create radio group items dynamically
+        LinearLayout radioGroup = dialogView.findViewById(R.id.radioGroup);
+
+        for (int i = 0; i < languages.length; i++) {
+            View radioItem = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_radio_item, null);
+            TextView radioText = radioItem.findViewById(R.id.radioText);
+            View radioCircle = radioItem.findViewById(R.id.radioCircle);
+
+            radioText.setText(languages[i]);
+
+            final int index = i;
+            if (selectedLanguage == i) {
+                radioCircle.setBackgroundResource(R.drawable.radio_selected);
             }
 
-            dialog.dismiss();
-        });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
+            radioItem.setOnClickListener(v -> {
+                LocaleHelper.setLocale(requireContext(), languageCodes[index]);
+                if (getActivity() != null) {
+                    getActivity().recreate();
+                }
+                dialog.dismiss();
+            });
+
+            radioGroup.addView(radioItem);
+        }
+
+        TextView buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+        buttonCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 }

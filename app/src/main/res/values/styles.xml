@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="CalendarViewModern" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">#E8ECF1</item>
+        <item name="colorControlActivated">#2196F3</item>
+        <item name="android:datePickerStyle">@style/CalendarDateModern</item>
+    </style>
+
+    <style name="CalendarDateModern" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">#1A1A1A</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="CalendarWeekModern" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">#FF9800</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+</resources>

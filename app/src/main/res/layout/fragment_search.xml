@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:background="@drawable/bg_gradient"
     android:fillViewport="true">
 
     <LinearLayout
@@ -12,119 +12,79 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/search_header_bg"
-            android:padding="20dp"
-            android:layout_marginBottom="8dp">
+            android:background="@drawable/header_gradient"
+            android:padding="24dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_horizontal"
+            android:elevation="8dp"
+            android:alpha="0.95"
+            android:stateListAnimator="@null">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_hotel"
+                android:layout_marginBottom="8dp"
+                app:tint="#FFFFFF" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Find Your Perfect Stay"
-                android:textSize="24sp"
+                android:textSize="28sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:layout_marginBottom="4dp" />
+                android:layout_marginBottom="8dp"
+                android:fontFamily="sans-serif-medium" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Search hundreds of hotels worldwide"
                 android:textSize="14sp"
-                android:textColor="#B8D4F0" />
+                android:textColor="#E0E0E0" />
 
         </LinearLayout>
 
-        <!-- Search Form -->
-        <LinearLayout
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/form_card_bg"
-            android:padding="16dp"
-            android:elevation="4dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardUseCompatPadding="true">
 
-            <!-- Location Section -->
-            <LinearLayout
-                android:id="@+id/layoutLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:layout_marginBottom="12dp"
-                android:gravity="center_vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="@drawable/field_bg"
-                android:foreground="?attr/selectableItemBackground">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_location"
-                    android:layout_marginEnd="12dp"
-                    app:tint="#003580" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Destination"
-                        android:textSize="12sp"
-                        android:textColor="#6B6B6B" />
-
-                    <TextView
-                        android:id="@+id/textViewLocation"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Where are you going?"
-                        android:textSize="15sp"
-                        android:textColor="#B0B0B0"
-                        android:layout_marginTop="2dp" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- Dates Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="20dp">
 
-                <!-- Check-in Date -->
                 <LinearLayout
-                    android:id="@+id/layoutCheckIn"
-                    android:layout_width="0dp"
+                    android:id="@+id/layoutLocation"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:orientation="horizontal"
-                    android:padding="12dp"
+                    android:padding="16dp"
+                    android:layout_marginBottom="16dp"
                     android:gravity="center_vertical"
                     android:clickable="true"
                     android:focusable="true"
-                    android:background="@drawable/field_bg"
-                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/field_bg_modern"
                     android:foreground="?attr/selectableItemBackground">
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_calendar"
-                        android:layout_marginEnd="8dp"
-                        app:tint="#003580" />
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_location"
+                        android:layout_marginEnd="12dp"
+                        app:tint="#00A8FF" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -135,44 +95,153 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Check-in"
-                            android:textSize="11sp"
-                            android:textColor="#6B6B6B" />
+                            android:text="Destination"
+                            android:textSize="12sp"
+                            android:textColor="#00A8FF"
+                            android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/textViewCheckInDate"
+                            android:id="@+id/textViewLocation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Add date"
-                            android:textSize="14sp"
-                            android:textColor="#B0B0B0"
-                            android:layout_marginTop="2dp" />
+                            android:text="Where are you going?"
+                            android:textSize="15sp"
+                            android:textColor="#999999"
+                            android:layout_marginTop="4dp" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="#CCCCCC" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:id="@+id/layoutCheckIn"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="@drawable/field_bg_modern"
+                        android:layout_marginEnd="8dp"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_calendar"
+                            android:layout_marginEnd="8dp"
+                            app:tint="#FF6B35" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Check-in"
+                                android:textSize="11sp"
+                                android:textColor="#FF6B35"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/textViewCheckInDate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Add date"
+                                android:textSize="13sp"
+                                android:textColor="#999999"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutCheckOut"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="@drawable/field_bg_modern"
+                        android:layout_marginStart="8dp"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_calendar"
+                            android:layout_marginEnd="8dp"
+                            app:tint="#FF6B35" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Check-out"
+                                android:textSize="11sp"
+                                android:textColor="#FF6B35"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/textViewCheckOutDate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Add date"
+                                android:textSize="13sp"
+                                android:textColor="#999999"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- Check-out Date -->
                 <LinearLayout
-                    android:id="@+id/layoutCheckOut"
-                    android:layout_width="0dp"
+                    android:id="@+id/layoutGuests"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:orientation="horizontal"
-                    android:padding="12dp"
+                    android:padding="16dp"
+                    android:layout_marginBottom="24dp"
                     android:gravity="center_vertical"
                     android:clickable="true"
                     android:focusable="true"
-                    android:background="@drawable/field_bg"
-                    android:layout_marginStart="8dp"
+                    android:background="@drawable/field_bg_modern"
                     android:foreground="?attr/selectableItemBackground">
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_calendar"
-                        android:layout_marginEnd="8dp"
-                        app:tint="#003580" />
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_people"
+                        android:layout_marginEnd="12dp"
+                        app:tint="#00A8FF" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -183,85 +252,47 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Check-out"
-                            android:textSize="11sp"
-                            android:textColor="#6B6B6B" />
+                            android:text="Guests"
+                            android:textSize="12sp"
+                            android:textColor="#00A8FF"
+                            android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/textViewCheckOutDate"
+                            android:id="@+id/textViewGuests"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Add date"
-                            android:textSize="14sp"
-                            android:textColor="#B0B0B0"
-                            android:layout_marginTop="2dp" />
+                            android:text="1 Adult"
+                            android:textSize="15sp"
+                            android:textColor="#999999"
+                            android:layout_marginTop="4dp" />
 
                     </LinearLayout>
 
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- Guests Section -->
-            <LinearLayout
-                android:id="@+id/layoutGuests"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:layout_marginBottom="20dp"
-                android:gravity="center_vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="@drawable/field_bg"
-                android:foreground="?attr/selectableItemBackground">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_people"
-                    android:layout_marginEnd="12dp"
-                    app:tint="#003580" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Guests"
-                        android:textSize="12sp"
-                        android:textColor="#6B6B6B" />
-
-                    <TextView
-                        android:id="@+id/textViewGuests"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="1 Adult"
-                        android:textSize="15sp"
-                        android:textColor="#B0B0B0"
-                        android:layout_marginTop="2dp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="#CCCCCC" />
 
                 </LinearLayout>
 
-            </LinearLayout>
-->
-            <Button
-                android:id="@+id/buttonSearch"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="Search Hotels"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/button_search_bg"
-                android:textAllCaps="false"
-                android:stateListAnimator="@null" />
+                <Button
+                    android:id="@+id/buttonSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Search Hotels"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/button_search_blue"
+                    app:backgroundTint="@null"
+                    android:textAllCaps="false"
+                    android:stateListAnimator="@null"
+                    android:elevation="2dp" />
 
-        </LinearLayout>
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 
